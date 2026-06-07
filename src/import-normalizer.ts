@@ -151,7 +151,7 @@ export async function runImportNormalizer(
     const originalCreatedAt = fileStat.birthtime ? fileStat.birthtime.toISOString() : null;
     const originalUpdatedAt = fileStat.mtime ? fileStat.mtime.toISOString() : null;
 
-    const promotionStatus = hasAttachments ? "needs_review" : "needs_review"; // Default to needs_review as required
+    const promotionStatus = hasAttachments ? "needs_review" : "promoted";
     const promotionReason = hasAttachments 
       ? "Initial normalization. Flagged for review due to embedded attachment/links."
       : "Initial normalization. Passed standard validation.";
