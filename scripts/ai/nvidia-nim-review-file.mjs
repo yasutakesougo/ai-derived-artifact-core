@@ -115,74 +115,96 @@ for (let attempt = 1; attempt <= retryCount + 1; attempt += 1) {
 
 const output = response?.choices?.[0]?.message?.content ?? '';
 
-// Validate and parse JSON response
-function validateReviewJSON(jsonString) {
-  let parsed;
-  
-  // Try to extract JSON from the response
+/**
+ * Validates the NVIDIA NIM review JSON output against the expected schema.
+ * @param {string} jsonString - The JSON string to validate
+ * @returns {{success: boolean, data?: object, error?: string}}
+ */
+function validateNimReviewOutput(jsonString) {
   try {
-    // First, try direct parsing
-    parsed = JSON.parse(jsonString);
-  } catch {
-    // Try to extract JSON object from the response
+    // Extract JSON from the output (in case there's surrounding text)
     const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('No JSON object found in response');
+      return {
+        success: false,
+        error: 'Failed to extract JSON from NVIDIA NIM output. Output does not contain valid JSON.',
+      };
     }
-    try {
-      parsed = JSON.parse(jsonMatch[0]);
-    } catch (e) {
-      throw new Error(`Invalid JSON format: ${e.message}`);
+
+    const data = JSON.parse(jsonMatch[0]);
+
+    // Validate required fields
+    const errors = [];
+
+    // Validate decision
+    if (!['approve', 'needs_review', 'reject'].includes(data.decision)) {
+      errors.push(
+        `'decision' must be one of ['approve', 'needs_review', 'reject'], got: ${JSON.stringify(data.decision)}`
+      );
     }
+
+    // Validate reason
+    if (typeof data.reason !== 'string' || data.reason.trim() === '') {
+      errors.push(
+        `'reason' must be a non-empty string, got: ${JSON.stringify(data.reason)}`
+      );
+    }
+
+    // Validate suggestedTitle
+    if (typeof data.suggestedTitle !== 'string') {
+      errors.push(
+        `'suggestedTitle' must be a string, got: ${JSON.stringify(data.suggestedTitle)}`
+      );
+    }
+
+    // Validate riskNotes
+    if (!Array.isArray(data.riskNotes)) {
+      errors.push(
+        `'riskNotes' must be an array, got: ${JSON.stringify(data.riskNotes)}`
+      );
+    } else if (!data.riskNotes.every((item) => typeof item === 'string')) {
+      errors.push(
+        `'riskNotes' must be an array of strings, got: ${JSON.stringify(data.riskNotes)}`
+      );
+    }
+
+    // Validate confidence
+    if (!['low', 'medium', 'high'].includes(data.confidence)) {
+      errors.push(
+        `'confidence' must be one of ['low', 'medium', 'high'], got: ${JSON.stringify(data.confidence)}`
+      );
+    }
+
+    if (errors.length > 0) {
+      return {
+        success: false,
+        error: `Validation failed:\n${errors.map((e) => `  - ${e}`).join('\n')}`,
+      };
+    }
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (parseError) {
+    return {
+      success: false,
+      error: `JSON parse error: ${parseError.message}\n\nNIM output was:\n${jsonString}`,
+    };
   }
-
-  // Validate required fields and types
-  const errors = [];
-
-  // Validate decision
-  if (!parsed.decision || !['approve', 'needs_review', 'reject'].includes(parsed.decision)) {
-    errors.push(
-      `Invalid decision: expected "approve", "needs_review", or "reject", got "${parsed.decision}"`
-    );
-  }
-
-  // Validate reason
-  if (typeof parsed.reason !== 'string' || parsed.reason.trim() === '') {
-    errors.push('reason must be a non-empty string');
-  }
-
-  // Validate suggestedTitle
-  if (typeof parsed.suggestedTitle !== 'string') {
-    errors.push(`suggestedTitle must be a string, got ${typeof parsed.suggestedTitle}`);
-  }
-
-  // Validate riskNotes
-  if (!Array.isArray(parsed.riskNotes) || !parsed.riskNotes.every((item) => typeof item === 'string')) {
-    errors.push('riskNotes must be an array of strings');
-  }
-
-  // Validate confidence
-  if (!parsed.confidence || !['low', 'medium', 'high'].includes(parsed.confidence)) {
-    errors.push(
-      `Invalid confidence: expected "low", "medium", or "high", got "${parsed.confidence}"`
-    );
-  }
-
-  if (errors.length > 0) {
-    throw new Error(`Validation failed:\n  - ${errors.join('\n  - ')}`);
-  }
-
-  return parsed;
 }
 
-try {
-  const reviewJSON = validateReviewJSON(output);
-  console.log('\n--- NVIDIA NIM file review (validated) ---\n');
-  console.log(JSON.stringify(reviewJSON, null, 2));
-} catch (error) {
-  console.error('\n--- Review JSON validation failed ---\n');
-  console.error(`Error: ${error.message}`);
-  console.error('\nRaw response from NVIDIA NIM:');
-  console.error(output);
+// Validate the output
+const validation = validateNimReviewOutput(output);
+
+console.log('\n--- NVIDIA NIM file review ---\n');
+
+if (validation.success) {
+  console.log('✓ Validation successful');
+  console.log('\nParsed review data:');
+  console.log(JSON.stringify(validation.data, null, 2));
+} else {
+  console.error('✗ Validation failed');
+  console.error(validation.error);
   process.exit(1);
 }
