@@ -129,7 +129,17 @@ export async function generateClassification(
     throw new Error("Ollama generation returned empty response");
   }
 
-  const parsed = JSON.parse(data.response);
+  const rawModelOutput = data.response;
+  const repairResult = fixIncompleteJson(rawModelOutput);
+
+  let parsed;
+  try {
+    parsed = JSON.parse(repairResult.text);
+  } catch (err) {
+    console.error("RAW OLLAMA OUTPUT (PARSE CANDIDATE):", repairResult.text);
+    console.error("RAW OLLAMA OUTPUT (ORIGINAL):", rawModelOutput);
+    throw err;
+  }
 
   // Schema Validation
   if (!parsed || typeof parsed !== "object") {
@@ -156,6 +166,7 @@ export async function generateClassification(
   }
 
   // Quote Validation
+  const flags: Array<{ type: string; reason: string; claim?: string }> = [];
   for (const item of parsed.evidence) {
     if (typeof item.quote !== "string" || !item.quote.trim()) {
       throw new Error(
@@ -163,9 +174,11 @@ export async function generateClassification(
       );
     }
     if (!noteBody.includes(item.quote)) {
-      throw new Error(
-        `Evidence quote "${item.quote}" not found in source body`,
-      );
+      flags.push({
+        type: "invalid_evidence_quote",
+        reason: `Evidence quote "${item.quote}" was not found verbatim in the source body.`,
+        claim: item.quote,
+      });
     }
   }
 
@@ -209,6 +222,9 @@ export async function generateClassification(
       labels: parsed.labels,
       summary: parsed.summary,
       statement: `Ollama classification: ${parsed.summary}`,
+      flags,
+      json_auto_repaired: repairResult.repaired,
+      raw_model_output: rawModelOutput,
     },
     confidence: {
       retrieval:
@@ -273,4 +289,51 @@ function stableStringify(value: unknown): string {
       .join(",")}}`;
   }
   return JSON.stringify(value) ?? "null";
+}
+
+interface JsonRepairResult {
+  text: string;
+  repaired: boolean;
+}
+
+function fixIncompleteJson(jsonStr: string): JsonRepairResult {
+  const trimmed = jsonStr.trim();
+  const expectedClosers: string[] = [];
+  let inString = false;
+  let escape = false;
+
+  for (const char of trimmed) {
+    if (char === '"') {
+      if (!escape) {
+        inString = !inString;
+      }
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (char === "\\" && !escape) {
+        escape = true;
+      } else {
+        escape = false;
+      }
+      continue;
+    }
+
+    if (char === "{") {
+      expectedClosers.push("}");
+    } else if (char === "[") {
+      expectedClosers.push("]");
+    } else if (char === "}" || char === "]") {
+      if (expectedClosers.pop() !== char) {
+        return { text: trimmed, repaired: false };
+      }
+    }
+  }
+
+  if (inString || expectedClosers.length === 0) {
+    return { text: trimmed, repaired: false };
+  }
+
+  const suffix = expectedClosers.reverse().join("");
+  return { text: trimmed + suffix, repaired: true };
 }

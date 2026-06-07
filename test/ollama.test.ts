@@ -87,6 +87,10 @@ describe("Ollama Adapter logic & validation", () => {
     expect(artifact.confidence.overall).toBe(0.64);
     expect(artifact.evidence).toHaveLength(1);
     expect(artifact.evidence[0]?.quote).toBe("Verbatim text in body.");
+    expect(artifact.content.json_auto_repaired).toBe(false);
+    expect(artifact.content.raw_model_output).toContain(
+      '"summary":"This is a valid summary"',
+    );
   });
 
   it("2. rejects invalid JSON", async () => {
@@ -133,14 +137,76 @@ describe("Ollama Adapter logic & validation", () => {
     ).rejects.toThrow("evidence is mandatory");
   });
 
-  it("4. rejects evidence quote not found in source body", async () => {
+  it("4. flags an unmatched evidence quote without replacing it", async () => {
+    const modelQuote = "different quote not in note";
     fetchMock.mockImplementation((url: string) => {
       if (url.endsWith("/api/tags")) return createMockTagsResponse([]);
       return createMockGenerateResponse({
         labels: ["test"],
         summary: "test",
         confidence: { retrieval: 1, reasoning: 1, overall: 1 },
-        evidence: [{ quote: "different quote not in note" }],
+        evidence: [{ quote: modelQuote }],
+      });
+    });
+
+    const artifact = await generateClassification(
+      "http://localhost:11434",
+      "qwen3:8b",
+      "prompt-v1",
+      "note_A",
+      "sha256:hash",
+      "Actual body text",
+    );
+
+    expect(artifact.evidence[0]?.quote).toBe(modelQuote);
+    expect(artifact.content.flags).toEqual([
+      {
+        type: "invalid_evidence_quote",
+        reason: `Evidence quote "${modelQuote}" was not found verbatim in the source body.`,
+        claim: modelQuote,
+      },
+    ]);
+    expect(artifact.content.raw_model_output).toContain(modelQuote);
+  });
+
+  it("repairs missing JSON closers and records the original raw output", async () => {
+    const rawModelOutput = JSON.stringify({
+      labels: ["test"],
+      summary: "test",
+      confidence: { retrieval: 1, reasoning: 1, overall: 1 },
+      evidence: [{ quote: "Body text" }],
+    }).slice(0, -2);
+
+    fetchMock.mockImplementation((url: string) => {
+      if (url.endsWith("/api/tags")) return createMockTagsResponse([]);
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ response: rawModelOutput }),
+      });
+    });
+
+    const artifact = await generateClassification(
+      "http://localhost:11434",
+      "qwen3:8b",
+      "prompt-v1",
+      "note_A",
+      "sha256:hash",
+      "Body text",
+    );
+
+    expect(artifact.content.json_auto_repaired).toBe(true);
+    expect(artifact.content.raw_model_output).toBe(rawModelOutput);
+    expect(artifact.evidence[0]?.quote).toBe("Body text");
+  });
+
+  it("does not repair JSON truncated inside a string", async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (url.endsWith("/api/tags")) return createMockTagsResponse([]);
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          response: '{"labels":["test"],"summary":"unfinished',
+        }),
       });
     });
 
@@ -151,9 +217,9 @@ describe("Ollama Adapter logic & validation", () => {
         "prompt-v1",
         "note_A",
         "sha256:hash",
-        "Actual body text",
+        "Body text",
       ),
-    ).rejects.toThrow("not found in source body");
+    ).rejects.toThrow();
   });
 
   it("5. includes promptHash in generationContext", async () => {
