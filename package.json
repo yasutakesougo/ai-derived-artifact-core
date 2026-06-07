@@ -8,7 +8,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "probe:nvidia": "node scripts/ai/nvidia-nim-probe.mjs",
-    "review:nvidia": "node scripts/ai/nvidia-nim-review-file.mjs"
+    "review:nvidia": "node scripts/ai/nvidia-nim-review-file.mjs",
+    "review:nvidia:batch": "node scripts/ai/nvidia-nim-review-batch.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",
