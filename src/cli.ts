@@ -2,6 +2,7 @@
 
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { parseOptionalCount } from "./batch-scope.js";
 import { JsonAuditStore } from "./json-storage.js";
 import {
   runFreshness,
@@ -226,12 +227,14 @@ function parseScanVaultArgs(args: readonly string[]): {
     throw new Error("Missing value for --vault");
   }
   const sourceFolder = readOption(args, "--source-folder");
+  const scope = parseBatchScopeArgs(args);
   return {
     recordsPath: resolve(readOption(args, "--records") ?? "records"),
     options: {
       vaultPath: resolve(vaultPath),
       dryRun,
       ...(sourceFolder ? { sourceFolder } : {}),
+      ...scope,
     },
   };
 }
@@ -254,6 +257,7 @@ function parseProposalArgs(args: readonly string[]): {
     throw new Error("Missing value for --generated-at");
   }
   const sourceFolder = readOption(args, "--source-folder");
+  const scope = parseBatchScopeArgs(args);
   const provider = readOption(args, "--provider");
   if (provider && provider !== "stub" && provider !== "ollama") {
     throw new Error("Invalid provider option. Must be 'stub' or 'ollama'");
@@ -269,11 +273,40 @@ function parseProposalArgs(args: readonly string[]): {
       dryRun,
       generatedAt,
       ...(sourceFolder ? { sourceFolder } : {}),
+      ...scope,
       provider: (provider as "stub" | "ollama") ?? "stub",
       ...(ollamaUrl ? { ollamaUrl } : {}),
       ...(modelName ? { modelName } : {}),
       ...(promptVersion ? { promptVersion } : {}),
     },
+  };
+}
+
+function parseBatchScopeArgs(args: readonly string[]): {
+  includePrefix?: string;
+  minFiles?: number;
+  maxFiles?: number;
+} {
+  const includePrefix = readOption(args, "--include-prefix");
+  const minFiles = parseOptionalCount(
+    readOption(args, "--min-files"),
+    "--min-files",
+  );
+  const maxFiles = parseOptionalCount(
+    readOption(args, "--max-files"),
+    "--max-files",
+  );
+  if (
+    minFiles !== undefined &&
+    maxFiles !== undefined &&
+    minFiles > maxFiles
+  ) {
+    throw new Error("--min-files must not exceed --max-files.");
+  }
+  return {
+    ...(includePrefix ? { includePrefix } : {}),
+    ...(minFiles !== undefined ? { minFiles } : {}),
+    ...(maxFiles !== undefined ? { maxFiles } : {}),
   };
 }
 

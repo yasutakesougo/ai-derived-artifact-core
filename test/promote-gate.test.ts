@@ -421,4 +421,97 @@ This note is long enough, but is explicitly marked as needs_review in frontmatte
       )
     ).rejects.toThrow("Both --apply and --confirm-promotion flags must be provided to apply changes.");
   });
+
+  it("hard-blocks SharePoint inventory even when manually marked promoted", async () => {
+    await writeFile(
+      join(standardizedDir, "pilot1-sharepoint.md"),
+      `---
+importId: imp-sp-001
+sourceSystem: sharepoint
+sourceUrl: https://example.test/document
+importedAt: 2026-06-07T12:00:00Z
+originalCreatedAt: null
+originalUpdatedAt: null
+promotionStatus: promoted
+promotionReason: Manually changed
+containsPersonalInfo: "false"
+attachmentPolicy: strip
+type: observation
+---
+This inventory body is long enough that it would otherwise be promoted.
+`,
+      "utf8",
+    );
+
+    await runPromotionGate(
+      {
+        standardizedDir,
+        sourceDir,
+        logDir,
+        rejectedDir,
+        apply: true,
+        confirmPromotion: true,
+      },
+      () => {},
+      () => {},
+    );
+
+    expect(await readdir(sourceDir)).toEqual([]);
+    const skipped = JSON.parse(
+      await readFile(join(logDir, "promotion_skipped.json"), "utf8"),
+    );
+    expect(skipped).toEqual([
+      expect.objectContaining({ reason: "sharepoint_inventory_only" }),
+    ]);
+  });
+
+  it("scopes Pilot files and writes an automatic noteId during promotion", async () => {
+    const frontmatter = (importId: string) => `---
+importId: ${importId}
+sourceSystem: apple-notes
+sourcePath: file:///notes/${importId}
+importedAt: 2026-06-07T12:00:00Z
+originalCreatedAt: null
+originalUpdatedAt: null
+promotionStatus: promoted
+promotionReason: Reviewed
+containsPersonalInfo: "false"
+attachmentPolicy: strip
+type: observation
+---
+This Pilot note is long enough to pass all promotion validation rules.
+`;
+    for (const [name, id] of [
+      ["pilot1-a.md", "imp-an-a"],
+      ["pilot1-b.md", "imp-an-b"],
+      ["pilot1-c.md", "imp-an-c"],
+      ["drill-ignore.md", "imp-an-drill"],
+    ] as const) {
+      await writeFile(join(standardizedDir, name), frontmatter(id), "utf8");
+    }
+
+    await runPromotionGate(
+      {
+        standardizedDir,
+        sourceDir,
+        logDir,
+        rejectedDir,
+        apply: true,
+        confirmPromotion: true,
+        includePrefix: "pilot1-",
+        minFiles: 3,
+        maxFiles: 5,
+      },
+      () => {},
+      () => {},
+    );
+
+    expect((await readdir(sourceDir)).sort()).toEqual([
+      "pilot1-a.md",
+      "pilot1-b.md",
+      "pilot1-c.md",
+    ]);
+    expect(await readFile(join(sourceDir, "pilot1-a.md"), "utf8"))
+      .toContain("noteId: imp-an-a");
+  });
 });

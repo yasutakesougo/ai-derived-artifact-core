@@ -14,6 +14,9 @@ import { generateClassification } from "./ollama.js";
 export interface ProposalGenerationOptions {
   vaultPath: string;
   sourceFolder?: string;
+  includePrefix?: string;
+  minFiles?: number;
+  maxFiles?: number;
   dryRun: boolean;
   generatedAt: string;
   model?: ModelIdentity;
@@ -73,6 +76,9 @@ export async function generateProposalDrafts(
 ): Promise<ProposalGenerationReport> {
   const scan = await scanObsidianVault(options.vaultPath, {
     ...(options.sourceFolder ? { sourceFolder: options.sourceFolder } : {}),
+    ...(options.includePrefix ? { includePrefix: options.includePrefix } : {}),
+    ...(options.minFiles !== undefined ? { minFiles: options.minFiles } : {}),
+    ...(options.maxFiles !== undefined ? { maxFiles: options.maxFiles } : {}),
   });
   const state = await store.reconstructState();
   const eligible: EligibleSource[] = [];

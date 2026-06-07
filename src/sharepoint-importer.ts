@@ -14,11 +14,15 @@ interface CliOptions {
 }
 
 interface SharePointFrontmatter {
+  importId: string;
   sourceSystem: "sharepoint";
   sourceUrl: string;
   title: string;
   itemType: "file" | "folder" | "page" | "unknown";
-  fetchedAt: string;
+  importedAt: string;
+  originalCreatedAt: null;
+  originalUpdatedAt: null;
+  promotionReason: string;
   fetchStatus: "success" | "failed";
   textExtractionStatus: "extracted" | "metadata_only" | "failed";
   promotionStatus: "needs_review" | "rejected";
@@ -112,12 +116,20 @@ export async function runSharePointImporter(
     });
   } else {
     // Generate Frontmatter
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const rand = Math.random().toString(36).substring(2, 8);
+    const importId = `imp-sp-${dateStr}-${rand}`;
+
     const frontmatter: SharePointFrontmatter = {
+      importId,
       sourceSystem: "sharepoint",
       sourceUrl: options.url,
       title: options.title,
       itemType: options.itemType,
-      fetchedAt: new Date().toISOString(),
+      importedAt: new Date().toISOString(),
+      originalCreatedAt: null,
+      originalUpdatedAt: null,
+      promotionReason: "SharePoint inventory record creation. Automatic promotion prohibited.",
       fetchStatus: "success",
       textExtractionStatus: "metadata_only",
       promotionStatus: "needs_review", // Safety rule: automatic promotion prohibited
@@ -162,7 +174,8 @@ export async function runSharePointImporter(
 
 - **Source URL**: ${plan.sourceUrl}
 - **Item Type**: ${plan.itemType}
-- **Fetched At**: ${plan.frontmatter.fetchedAt}
+- **Imported At**: ${plan.frontmatter.importedAt}
+
 
 ## Metadata Summary
 This record represents a reference to a SharePoint resource.

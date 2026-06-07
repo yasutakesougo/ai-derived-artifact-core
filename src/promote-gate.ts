@@ -3,9 +3,16 @@
 import { copyFile, mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
+import {
+  filterBatchNames,
+  parseOptionalCount,
+  validateBatchScope,
+  type BatchScope,
+} from "./batch-scope.js";
 
 export interface StandardizedFrontmatter {
   importId: string;
+  noteId?: string | undefined;
   sourceSystem: string;
   sourcePath?: string | undefined;
   sourceUrl?: string | undefined;
@@ -19,7 +26,7 @@ export interface StandardizedFrontmatter {
   type?: string | undefined;
 }
 
-export interface CliOptions {
+export interface CliOptions extends BatchScope {
   standardizedDir: string;
   sourceDir: string;
   logDir: string;
@@ -38,7 +45,7 @@ export interface PromotionPlanItem {
 export interface SkippedItem {
   fileName: string;
   importId?: string;
-  reason: "duplicate_filename" | "duplicate_import_id" | "invalid_frontmatter" | "no_change";
+  reason: "duplicate_filename" | "duplicate_import_id" | "duplicate_note_id" | "invalid_frontmatter" | "no_change" | "sharepoint_inventory_only";
   details: string;
 }
 
@@ -95,6 +102,7 @@ export async function runPromotionGate(
 
   const existingFileNamesSet = new Set(existingFiles);
   const existingImportIdsSet = new Set<string>();
+  const existingNoteIdsSet = new Set<string>();
 
   for (const name of existingFiles) {
     const filePath = join(options.sourceDir, name);
@@ -105,6 +113,9 @@ export async function runPromotionGate(
         const fm = parseYaml(fmMatch[1]) as Record<string, any>;
         if (fm && typeof fm === "object" && typeof fm.importId === "string") {
           existingImportIdsSet.add(fm.importId);
+        }
+        if (fm && typeof fm === "object" && typeof fm.noteId === "string") {
+          existingNoteIdsSet.add(fm.noteId);
         }
       }
     } catch (err) {
@@ -122,6 +133,7 @@ export async function runPromotionGate(
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to read standardized directory ${options.standardizedDir}: ${message}`);
   }
+  standardizedFiles = filterBatchNames(standardizedFiles, options);
 
   stdout(`Loaded ${standardizedFiles.length} standardized files to evaluate.\n`);
 
@@ -182,6 +194,9 @@ export async function runPromotionGate(
       try {
         const frontmatter: StandardizedFrontmatter = {
           importId: requireString(fm.importId, "importId"),
+          noteId: fm.noteId !== undefined
+            ? requireNoteId(fm.noteId)
+            : requireNoteId(fm.importId),
           sourceSystem: requireString(fm.sourceSystem, "sourceSystem"),
           sourcePath: fm.sourcePath !== undefined ? requireString(fm.sourcePath, "sourcePath") : undefined,
           sourceUrl: fm.sourceUrl !== undefined ? requireString(fm.sourceUrl, "sourceUrl") : undefined,
@@ -222,6 +237,7 @@ export async function runPromotionGate(
   // 5. Evaluate rules and duplicates
   const evaluatedList: EvaluationResult[] = [];
   const processedImportIdsSet = new Set<string>();
+  const processedNoteIdsSet = new Set<string>();
   const processedFileNamesSet = new Set<string>();
 
   for (const parsed of parsedList) {
@@ -229,6 +245,16 @@ export async function runPromotionGate(
     const name = parsed.fileName;
     const reasons: string[] = [];
     let isSkipped = false;
+
+    if (fm.sourceSystem === "sharepoint") {
+      skippedList.push({
+        fileName: name,
+        importId: fm.importId,
+        reason: "sharepoint_inventory_only",
+        details: "SharePoint inventory records are metadata-only and cannot be promoted to source.",
+      });
+      continue;
+    }
 
     // Duplication Check (Filename)
     if (existingFileNamesSet.has(name) || processedFileNamesSet.has(name)) {
@@ -242,12 +268,29 @@ export async function runPromotionGate(
     }
 
     // Duplication Check (ImportId)
-    if (existingImportIdsSet.has(fm.importId) || processedImportIdsSet.has(fm.importId)) {
+    const importIdDuplicate =
+      existingImportIdsSet.has(fm.importId) ||
+      processedImportIdsSet.has(fm.importId);
+    if (importIdDuplicate) {
       skippedList.push({
         fileName: name,
         importId: fm.importId,
         reason: "duplicate_import_id",
         details: `ImportId ${fm.importId} already exists in destination or is duplicated in this batch.`,
+      });
+      isSkipped = true;
+    }
+
+    if (
+      (!importIdDuplicate || fm.noteId !== fm.importId) &&
+      (existingNoteIdsSet.has(fm.noteId!) ||
+        processedNoteIdsSet.has(fm.noteId!))
+    ) {
+      skippedList.push({
+        fileName: name,
+        importId: fm.importId,
+        reason: "duplicate_note_id",
+        details: `NoteId ${fm.noteId} already exists in destination or is duplicated in this batch.`,
       });
       isSkipped = true;
     }
@@ -258,6 +301,7 @@ export async function runPromotionGate(
 
     processedFileNamesSet.add(name);
     processedImportIdsSet.add(fm.importId);
+    processedNoteIdsSet.add(fm.noteId!);
 
     // Rule Evaluation
     let finalStatus: "promoted" | "needs_review" | "rejected" = fm.promotionStatus;
@@ -345,7 +389,7 @@ export async function runPromotionGate(
       diffMarkdown += `## ${item.parseResult.fileName} (New File)\n\n`;
       diffMarkdown += `\`\`\`diff\n`;
       diffMarkdown += `+++ /source/${item.parseResult.fileName}\n`;
-      const lines = item.parseResult.content.split("\n");
+      const lines = withGeneratedNoteId(item.parseResult).split("\n");
       for (const line of lines) {
         diffMarkdown += `+ ${line}\n`;
       }
@@ -390,7 +434,7 @@ export async function runPromotionGate(
     
     if (item.finalStatus === "promoted") {
       const destPath = join(options.sourceDir, item.parseResult.fileName);
-      await copyFile(srcPath, destPath);
+      await writeFile(destPath, withGeneratedNoteId(item.parseResult), "utf8");
       stdout(`[PROMOTED] Copied ${item.parseResult.fileName} to ${options.sourceDir}\n`);
     } else if (item.finalStatus === "rejected") {
       const destPath = join(options.rejectedDir, item.parseResult.fileName);
@@ -412,6 +456,24 @@ function requireString(value: unknown, name: string): string {
   return value.trim();
 }
 
+function requireNoteId(value: unknown): string {
+  const noteId = requireString(value, "noteId");
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(noteId)) {
+    throw new Error(`Field "noteId" contains an invalid value: "${noteId}"`);
+  }
+  return noteId;
+}
+
+function withGeneratedNoteId(parsed: ParseResult): string {
+  const noteId = parsed.frontmatter!.noteId!;
+  const yamlEnd = parsed.content.indexOf("\n---\n", 4);
+  const yamlText = parsed.content.slice(4, yamlEnd);
+  if (/^noteId:\s*/mu.test(yamlText)) {
+    return parsed.content;
+  }
+  return `${parsed.content.slice(0, yamlEnd)}\nnoteId: ${noteId}${parsed.content.slice(yamlEnd)}`;
+}
+
 function requireEnum<T extends string>(value: unknown, allowed: readonly T[], name: string): T {
   if (typeof value !== "string" || !allowed.includes(value as T)) {
     throw new Error(`Field "${name}" must be one of [${allowed.join(", ")}], got "${String(value)}"`);
@@ -426,19 +488,27 @@ function parseArgs(args: string[]): CliOptions {
   const rejectedDir = readOption(args, "--rejected-dir");
   const apply = args.includes("--apply");
   const confirmPromotion = args.includes("--confirm-promotion");
+  const includePrefix = readOption(args, "--include-prefix");
+  const minFiles = parseOptionalCount(readOption(args, "--min-files"), "--min-files");
+  const maxFiles = parseOptionalCount(readOption(args, "--max-files"), "--max-files");
 
   if (!standardizedDir || !sourceDir || !logDir || !rejectedDir) {
     throw new Error("Missing required arguments: --standardized-dir, --source-dir, --log-dir, --rejected-dir");
   }
 
-  return {
+  const options: CliOptions = {
     standardizedDir: resolve(standardizedDir),
     sourceDir: resolve(sourceDir),
     logDir: resolve(logDir),
     rejectedDir: resolve(rejectedDir),
     apply,
     confirmPromotion,
+    ...(includePrefix ? { includePrefix } : {}),
+    ...(minFiles !== undefined ? { minFiles } : {}),
+    ...(maxFiles !== undefined ? { maxFiles } : {}),
   };
+  validateBatchScope(options);
+  return options;
 }
 
 function readOption(args: string[], name: string): string | undefined {

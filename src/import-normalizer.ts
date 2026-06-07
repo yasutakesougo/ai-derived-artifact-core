@@ -2,10 +2,16 @@
 
 import { stat, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
-import { stringify as stringifyYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import {
+  filterBatchNames,
+  parseOptionalCount,
+  validateBatchScope,
+  type BatchScope,
+} from "./batch-scope.js";
 import { StandardizedFrontmatter } from "./promote-gate.js";
 
-interface CliOptions {
+interface CliOptions extends BatchScope {
   rawDir: string;
   standardizedDir: string;
   logDir: string;
@@ -72,7 +78,17 @@ export async function runImportNormalizer(
     }
   }
 
-  stdout(`Scanned raw directory. Found ${rawFiles.length} raw Markdown files to normalize.\n`);
+  const selectedNames = new Set(
+    filterBatchNames(
+      rawFiles.map((file) => file.fileName),
+      options,
+    ),
+  );
+  const selectedRawFiles = rawFiles.filter((file) =>
+    selectedNames.has(file.fileName),
+  );
+
+  stdout(`Scanned raw directory. Found ${selectedRawFiles.length} raw Markdown files to normalize.\n`);
 
   // Scan standardized directory to check for existing files to avoid overwriting
   let existingStandardized: string[] = [];
@@ -88,7 +104,7 @@ export async function runImportNormalizer(
 
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
-  for (const raw of rawFiles) {
+  for (const raw of selectedRawFiles) {
     const name = raw.fileName;
     
     // Guardrail: Do not overwrite existing standardized files
@@ -120,7 +136,19 @@ export async function runImportNormalizer(
     // Frontmatter stripping: if original has YAML frontmatter, strip it to get clean body
     let body = rawContent.replace(/\r\n?/gu, "\n").replace(/^\uFEFF/, "");
     const fmMatch = /^---\n([\s\S]*?)\n---\n/m.exec(body);
+    let existingNoteId: string | undefined;
     if (fmMatch) {
+      const existingFrontmatter = parseYaml(fmMatch[1]!) as unknown;
+      if (
+        existingFrontmatter &&
+        typeof existingFrontmatter === "object" &&
+        !Array.isArray(existingFrontmatter) &&
+        typeof (existingFrontmatter as Record<string, unknown>).noteId === "string"
+      ) {
+        existingNoteId = requireNoteId(
+          (existingFrontmatter as Record<string, string>).noteId!,
+        );
+      }
       body = body.slice(fmMatch[0].length);
     }
 
@@ -158,6 +186,7 @@ export async function runImportNormalizer(
 
     const frontmatter: StandardizedFrontmatter = {
       importId,
+      noteId: existingNoteId ?? importId,
       sourceSystem: raw.sourceSystem,
       sourcePath: resolve(raw.filePath),
       importedAt,
@@ -182,7 +211,7 @@ export async function runImportNormalizer(
   const summary = {
     status: "normalization_summary",
     generatedAt: new Date().toISOString(),
-    total: rawFiles.length,
+    total: selectedRawFiles.length,
     normalized: planList.length,
     skipped: skippedList.length,
   };
@@ -203,7 +232,7 @@ export async function runImportNormalizer(
   stdout("Writing standardized files...\n");
 
   for (const plan of planList) {
-    const rawFile = rawFiles.find((f) => f.fileName === plan.fileName)!;
+    const rawFile = selectedRawFiles.find((f) => f.fileName === plan.fileName)!;
     
     // Read raw content again to construct final content
     const rawContent = await readFile(rawFile.filePath, "utf8");
@@ -229,17 +258,25 @@ function parseArgs(args: string[]): CliOptions {
   const standardizedDir = readOption(args, "--standardized-dir");
   const logDir = readOption(args, "--log-dir");
   const apply = args.includes("--apply");
+  const includePrefix = readOption(args, "--include-prefix");
+  const minFiles = parseOptionalCount(readOption(args, "--min-files"), "--min-files");
+  const maxFiles = parseOptionalCount(readOption(args, "--max-files"), "--max-files");
 
   if (!rawDir || !standardizedDir || !logDir) {
     throw new Error("Missing required arguments: --raw-dir, --standardized-dir, --log-dir");
   }
 
-  return {
+  const options: CliOptions = {
     rawDir: resolve(rawDir),
     standardizedDir: resolve(standardizedDir),
     logDir: resolve(logDir),
     apply,
+    ...(includePrefix ? { includePrefix } : {}),
+    ...(minFiles !== undefined ? { minFiles } : {}),
+    ...(maxFiles !== undefined ? { maxFiles } : {}),
   };
+  validateBatchScope(options);
+  return options;
 }
 
 function readOption(args: string[], name: string): string | undefined {
@@ -250,6 +287,13 @@ function readOption(args: string[], name: string): string | undefined {
   const value = args[index + 1];
   if (!value || value.startsWith("--")) {
     throw new Error(`Missing value for ${name}`);
+  }
+  return value;
+}
+
+function requireNoteId(value: string): string {
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(value)) {
+    throw new Error(`Invalid noteId in raw frontmatter: "${value}"`);
   }
   return value;
 }

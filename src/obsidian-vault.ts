@@ -2,6 +2,11 @@ import { createHash } from "node:crypto";
 import { lstat, readFile, readdir, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { parse as parseYaml } from "yaml";
+import {
+  filterBatchNames,
+  validateBatchScope,
+  type BatchScope,
+} from "./batch-scope.js";
 
 export interface VaultSourceCandidate {
   relativePath: string;
@@ -19,7 +24,7 @@ export interface VaultScanReport {
   candidates: readonly VaultSourceCandidate[];
 }
 
-export interface VaultScanOptions {
+export interface VaultScanOptions extends BatchScope {
   sourceFolder?: string;
 }
 
@@ -27,6 +32,7 @@ export async function scanObsidianVault(
   vaultPath: string,
   options: VaultScanOptions = {},
 ): Promise<VaultScanReport> {
+  validateBatchScope(options);
   const sourceFolder = validateSourceFolder(options.sourceFolder ?? "source");
   const vaultRoot = await realpath(resolve(vaultPath));
   const sourceRoot = resolve(vaultRoot, sourceFolder);
@@ -39,9 +45,18 @@ export async function scanObsidianVault(
   const sourceRealPath = await realpath(sourceRoot);
   assertContained(vaultRoot, sourceRealPath);
 
-  const markdownFiles = await collectMarkdownFiles(
+  const allMarkdownFiles = await collectMarkdownFiles(
     vaultRoot,
     sourceRealPath,
+  );
+  const selectedRelativePaths = new Set(
+    filterBatchNames(
+      allMarkdownFiles.map((path) => toPortablePath(relative(sourceRealPath, path))),
+      options,
+    ),
+  );
+  const markdownFiles = allMarkdownFiles.filter((path) =>
+    selectedRelativePaths.has(toPortablePath(relative(sourceRealPath, path))),
   );
   const candidates = await Promise.all(
     markdownFiles.map(async (absolutePath) => {

@@ -231,4 +231,70 @@ Actual note body text here.
     expect(fileContent).toContain("# Actual Heading");
     expect(fileContent).toContain("Actual note body text here.");
   });
+
+  it("limits a Pilot batch by prefix and enforces the configured count", async () => {
+    for (const name of ["pilot1-a.md", "pilot1-b.md", "pilot1-c.md"]) {
+      await writeFile(join(rawAppleDir, name), `# ${name}\nPilot body text.\n`, "utf8");
+    }
+    await writeFile(join(rawAppleDir, "drill-ignore.md"), "# Drill\nIgnore.\n", "utf8");
+
+    await runImportNormalizer(
+      {
+        rawDir,
+        standardizedDir,
+        logDir,
+        apply: true,
+        includePrefix: "pilot1-",
+        minFiles: 3,
+        maxFiles: 5,
+      },
+      () => {},
+      () => {},
+    );
+
+    expect((await readdir(standardizedDir)).sort()).toEqual([
+      "pilot1-a.md",
+      "pilot1-b.md",
+      "pilot1-c.md",
+    ]);
+
+    await expect(
+      runImportNormalizer(
+        {
+          rawDir,
+          standardizedDir,
+          logDir,
+          apply: false,
+          includePrefix: "missing-",
+          minFiles: 3,
+          maxFiles: 5,
+        },
+        () => {},
+        () => {},
+      ),
+    ).rejects.toThrow("minimum is 3");
+  });
+
+  it("generates noteId from importId and preserves an existing noteId", async () => {
+    await writeFile(join(rawAppleDir, "generated.md"), "# Generated\nBody.\n", "utf8");
+    await writeFile(
+      join(rawOnenoteDir, "preserved.md"),
+      "---\nnoteId: existing-note-1\n---\n# Preserved\nBody.\n",
+      "utf8",
+    );
+
+    await runImportNormalizer(
+      { rawDir, standardizedDir, logDir, apply: true },
+      () => {},
+      () => {},
+    );
+
+    const generated = await readFile(join(standardizedDir, "generated.md"), "utf8");
+    const generatedImportId = /^importId:\s*(\S+)$/mu.exec(generated)?.[1];
+    expect(generatedImportId).toBeDefined();
+    expect(generated).toContain(`noteId: ${generatedImportId}`);
+
+    const preserved = await readFile(join(standardizedDir, "preserved.md"), "utf8");
+    expect(preserved).toContain("noteId: existing-note-1");
+  });
 });

@@ -166,6 +166,42 @@ describe("Obsidian Vault source reader", () => {
 
     await expect(scanObsidianVault(vault)).rejects.toThrow("Invalid noteId");
   });
+
+  it("scopes a Pilot scan by filename prefix and enforces batch size", async () => {
+    for (const name of ["pilot1-a.md", "pilot1-b.md", "pilot1-c.md"]) {
+      await writeMarkdown(
+        join(vault, "source", name),
+        name.replace(".md", ""),
+        "Pilot body\n",
+      );
+    }
+    await writeMarkdown(
+      join(vault, "source", "drill-ignore.md"),
+      "drill-ignore",
+      "Drill body\n",
+    );
+
+    const report = await scanObsidianVault(vault, {
+      includePrefix: "pilot1-",
+      minFiles: 3,
+      maxFiles: 5,
+    });
+
+    expect(report.scannedMarkdownFiles).toBe(3);
+    expect(report.candidates.map((candidate) => candidate.relativePath)).toEqual([
+      "source/pilot1-a.md",
+      "source/pilot1-b.md",
+      "source/pilot1-c.md",
+    ]);
+
+    await expect(
+      scanObsidianVault(vault, {
+        includePrefix: "missing-",
+        minFiles: 3,
+        maxFiles: 5,
+      }),
+    ).rejects.toThrow("minimum is 3");
+  });
 });
 
 async function writeMarkdown(

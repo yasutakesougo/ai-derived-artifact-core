@@ -84,10 +84,15 @@ describe("runSharePointImporter", () => {
 
     // Verify contents and safety rules
     const fileContent = await readFile(join(outputDir, "sharepoint-Home-Portal-Page.md"), "utf8");
+    expect(fileContent).toMatch(/^importId: imp-sp-\d{8}-[a-z0-9]{6}$/mu);
     expect(fileContent).toContain("sourceSystem: sharepoint");
     expect(fileContent).toContain("sourceUrl: https://company.sharepoint.com/sites/CarePortal/SitePages/Home.aspx");
     expect(fileContent).toContain("title: Home Portal Page");
     expect(fileContent).toContain("itemType: page");
+    expect(fileContent).toContain("importedAt:");
+    expect(fileContent).toContain("originalCreatedAt: null");
+    expect(fileContent).toContain("originalUpdatedAt: null");
+    expect(fileContent).toContain("promotionReason: SharePoint inventory record creation.");
     expect(fileContent).toContain("textExtractionStatus: metadata_only");
     
     // Safety rules: automatic promotion prohibited, needs review

@@ -296,6 +296,30 @@ describe("stub proposal generation pipeline", () => {
     expect(stdout).toContain("proposalsExported:");
     expect(stdout).toContain("evidenceMaxLength:");
   });
+
+  it("generates proposals only for the scoped Pilot files", async () => {
+    for (const noteId of ["pilot1-a", "pilot1-b", "pilot1-c", "drill-ignore"]) {
+      await seedNote(noteId, `${noteId} body\n`, "observation");
+    }
+
+    const report = await generateProposalDrafts(store, {
+      ...options(true),
+      includePrefix: "pilot1-",
+      minFiles: 3,
+      maxFiles: 5,
+    });
+
+    expect(report.eligibleNotes).toBe(3);
+    const sourceIds = new Set(
+      report.drafts.flatMap((draft) => Object.keys(draft.sourceHashes)),
+    );
+    expect([...sourceIds].sort()).toEqual([
+      "pilot1-a",
+      "pilot1-b",
+      "pilot1-c",
+    ]);
+    expect(sourceIds.has("drill-ignore")).toBe(false);
+  });
 });
 
 function options(dryRun: boolean) {

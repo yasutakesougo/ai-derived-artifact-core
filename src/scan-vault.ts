@@ -5,6 +5,9 @@ import { scanObsidianVault } from "./obsidian-vault.js";
 export interface VaultScanAndSaveOptions {
   vaultPath: string;
   sourceFolder?: string;
+  includePrefix?: string;
+  minFiles?: number;
+  maxFiles?: number;
   dryRun: boolean;
 }
 
@@ -26,6 +29,9 @@ export async function scanVaultAndSave(
 ): Promise<VaultScanAndSaveReport> {
   const scan = await scanObsidianVault(options.vaultPath, {
     ...(options.sourceFolder ? { sourceFolder: options.sourceFolder } : {}),
+    ...(options.includePrefix ? { includePrefix: options.includePrefix } : {}),
+    ...(options.minFiles !== undefined ? { minFiles: options.minFiles } : {}),
+    ...(options.maxFiles !== undefined ? { maxFiles: options.maxFiles } : {}),
   });
 
   const state = await store.reconstructState();
