@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-015",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:25bb58dcd6238602402ab830ff3ea6be8209ebc13a57084f3c316af7e673359f",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# コミュニケーション場面\n\nD.Sさんは活動の合間に職員のところへ来て、PECSカードの「ジュース」を手渡した。職員が「ジュースが欲しいの？」と確認すると頷いた。ジュースを受け取った後、職員の顔を見てからカード入れに使用済みカードを戻した。この一連のやりとりは初めてプロンプトなしで完了したものであり、大きな進歩と言える。\n"
+}

@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-005",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:b2f1b8acd7af54765a0675c1aff3c39f09bf4769e2b4f4a2687ca8c31ee66672",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# トイレ場面の自立度\n\nD.Sさんは午前中に自発的にトイレに向かう行動が確認された。手洗いの手順では、石鹸を手に取る→両手をこすり合わせる→水で流す、の3ステップを写真カードなしで実行した。ただし、ハンドタオルでの手拭きは声かけが必要であった。排泄後の衣服の調整も自立して行えていた。\n"
+}

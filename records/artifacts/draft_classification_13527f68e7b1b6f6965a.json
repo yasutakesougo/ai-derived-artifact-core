@@ -1,0 +1,61 @@
+{
+  "artifactId": "draft_classification_13527f68e7b1b6f6965a",
+  "artifactHash": "sha256:467118a33f3ea2abf0f24b7ec3d1d426b3679a491ba8a20739c2dbe563333373",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-014": "sha256:15be1fa1a48960ae64512ce02318814ca3d830ff00c40127873fded146d2ba37"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "observation",
+    "labels": [
+      "observation"
+    ],
+    "summary": "Mock classification: observation. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: observation. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-014",
+      "sourceHash": "sha256:15be1fa1a48960ae64512ce02318814ca3d830ff00c40127873fded146d2ba37",
+      "quote": "# 帰りの準備"
+    },
+    {
+      "noteId": "obs-2026-014",
+      "sourceHash": "sha256:15be1fa1a48960ae64512ce02318814ca3d830ff00c40127873fded146d2ba37",
+      "quote": "Mさんは帰りの準備の時間に、連絡帳をカバンに入れる→上靴を脱ぐ→外靴を履く、の手順を視覚スケジュールを参照しながら実行した。"
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.486Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:15be1fa1a48960ae64512ce02318814ca3d830ff00c40127873fded146d2ba37",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.486Z"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "artifactId": "draft_classification_3d93911c559141675b6b",
+  "artifactHash": "sha256:9be5d4ff95b47e98ce584bf28cf90c4cf9a02b312cac2e686c47bdc9e8cc7ef9",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-003": "sha256:aecd3457f6a8aff4cef8fdff2f4966b83e79c99e977267876f4b1b678f3da8cb"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "behavior",
+    "labels": [
+      "behavior",
+      "observation"
+    ],
+    "summary": "Mock classification: behavior, observation. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: behavior, observation. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-003",
+      "sourceHash": "sha256:aecd3457f6a8aff4cef8fdff2f4966b83e79c99e977267876f4b1b678f3da8cb",
+      "quote": "# 食事場面の観察"
+    },
+    {
+      "noteId": "obs-2026-003",
+      "sourceHash": "sha256:aecd3457f6a8aff4cef8fdff2f4966b83e79c99e977267876f4b1b678f3da8cb",
+      "quote": "Kさんは昼食時、配膳された食事のうちサラダを先に完食してからメインディッシュに移行するパターンを示した。"
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.466Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:aecd3457f6a8aff4cef8fdff2f4966b83e79c99e977267876f4b1b678f3da8cb",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.466Z"
+  }
+}

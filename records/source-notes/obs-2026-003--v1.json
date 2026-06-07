@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-003",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:aecd3457f6a8aff4cef8fdff2f4966b83e79c99e977267876f4b1b678f3da8cb",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# 食事場面の観察\n\nB.Kさんは昼食時、配膳された食事のうちサラダを先に完食してからメインディッシュに移行するパターンを示した。食事中に隣席のC.Mさんが声を上げた際、両手で耳を覆う行動が見られた。職員がイヤーマフを提示すると受け取り、装着後は食事を再開した。食事時間は約25分であった。\n"
+}

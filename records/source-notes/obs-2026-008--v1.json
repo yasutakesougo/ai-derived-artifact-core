@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-008",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:d559d128ea154b39b426bec97e62b7aabce8af85a788359f5b77695da37c40e8",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# 制作活動への取り組み\n\nB.Kさんは折り紙の制作活動で、見本を見ながら犬の折り方に挑戦した。最初の3工程は自力で折れたが、4工程目の裏返す手順で手が止まった。職員が手を添えて一緒に折ると、5工程目以降は再び自力で進めた。完成後に職員に見せ、「できた」と口頭で伝えることができた。\n"
+}

@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-007",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:b7ef75ad81a171193e2f24c769f8ff8e340187a97c11a2c76322448d8d7b5f00",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# 送迎車内での行動\n\nE.Wさんは送迎車に乗る際、いつもの座席（運転席後方）が他児に座られていたため、車外で立ち止まった。職員が「今日はこちらの席はどう？」と別の席を提示したが首を振った。先に座っていた他児を別席に移動してもらい、いつもの席に座ると落ち着いて安全ベルトを自分で装着した。\n"
+}

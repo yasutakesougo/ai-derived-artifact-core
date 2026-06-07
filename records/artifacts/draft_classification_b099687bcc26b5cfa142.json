@@ -1,0 +1,61 @@
+{
+  "artifactId": "draft_classification_b099687bcc26b5cfa142",
+  "artifactHash": "sha256:9deb9c527aa10742e5a0e018d881379304188a7ad5f6a24016a51b4bc7ea1328",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-001": "sha256:c3872d434477bd12050e9b3a30c7a855b68a7a0b24e30c652714f617b08d1ff6"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "observation",
+    "labels": [
+      "observation"
+    ],
+    "summary": "Mock classification: observation. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: observation. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-001",
+      "sourceHash": "sha256:c3872d434477bd12050e9b3a30c7a855b68a7a0b24e30c652714f617b08d1ff6",
+      "quote": "# 朝の登所場面"
+    },
+    {
+      "noteId": "obs-2026-001",
+      "sourceHash": "sha256:c3872d434477bd12050e9b3a30c7a855b68a7a0b24e30c652714f617b08d1ff6",
+      "quote": "Tさんは朝9時に母親と共に到着した。"
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.462Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:c3872d434477bd12050e9b3a30c7a855b68a7a0b24e30c652714f617b08d1ff6",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.462Z"
+  }
+}

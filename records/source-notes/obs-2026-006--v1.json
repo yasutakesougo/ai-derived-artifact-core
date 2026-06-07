@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-006",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:c93398ef3b448ec33309ec82500db4ac634a3c4ebb96c433d20d5bd827875ed2",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# 午後の自由時間\n\nA.Tさんは自由時間に本棚から図鑑を選び、テーブルに座って閲覧した。恐竜のページを繰り返し開き、ティラノサウルスの絵を指差しながら「きょうりゅう」と発語した。他児が近づいた際に図鑑を抱えて離席したが、職員が「一緒に見る？」と聞くと首を横に振り、元の席に戻って閲覧を続けた。\n"
+}

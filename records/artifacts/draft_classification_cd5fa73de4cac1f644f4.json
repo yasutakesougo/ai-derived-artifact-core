@@ -1,0 +1,61 @@
+{
+  "artifactId": "draft_classification_cd5fa73de4cac1f644f4",
+  "artifactHash": "sha256:88139e1c10c2f1f7f9390524a375ebdc393934b2c0b4a5f3b374c488f17b2082",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-002": "sha256:169b6613f14870e807908d284a7ba910bdda9f9fc84d003ba591230694670aa4"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "behavior",
+    "labels": [
+      "behavior"
+    ],
+    "summary": "Mock classification: behavior. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: behavior. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-002",
+      "sourceHash": "sha256:169b6613f14870e807908d284a7ba910bdda9f9fc84d003ba591230694670aa4",
+      "quote": "# 午前の活動（個別課題）"
+    },
+    {
+      "noteId": "obs-2026-002",
+      "sourceHash": "sha256:169b6613f14870e807908d284a7ba910bdda9f9fc84d003ba591230694670aa4",
+      "quote": "10時からの個別課題で、A."
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.465Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:169b6613f14870e807908d284a7ba910bdda9f9fc84d003ba591230694670aa4",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.465Z"
+  }
+}

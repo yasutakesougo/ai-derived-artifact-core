@@ -1,0 +1,187 @@
+# AI Derived Artifact Core
+
+Pure TypeScript implementation of the lifecycle defined by
+`ai-derived-artifact-v1.1`.
+
+```text
+proposed -> approved -> stale
+         -> rejected
+         -> deferred
+         -> obsolete
+```
+
+The domain core contains only types and deterministic lifecycle functions. The
+same package also contains filesystem adapters and CLI orchestration that
+depend on the core. The core modules do not depend on Obsidian, Qdrant, Ollama,
+storage, clocks, or ID generators.
+
+## MVP Usage Boundary
+
+This core:
+
+- does not run AI models;
+- does not edit source notes;
+- does not treat Qdrant or any search index as a source of truth;
+- handles only domain validation, status transitions, and audit events.
+
+Callers are responsible for storage, authentication, authorization, source-note
+access, model execution, search indexing, clocks, and ID generation.
+
+The core must remain usable and fully testable without Obsidian, Qdrant, Ollama,
+or network access.
+
+## Integration Order
+
+Integrations should be added outside this package in the following order:
+
+1. JSON storage adapter
+2. CLI dry-run
+3. Read-only Obsidian Vault adapter
+4. AI proposal-note writer
+5. Qdrant and Ollama adapters
+
+Each adapter must depend on the core. The core must not depend on an adapter.
+
+## Commands
+
+```bash
+npm run cli -- freshness --dry-run
+npm run cli -- proposals --dry-run \
+  --vault /path/to/Vault \
+  --records /path/to/records \
+  --generated-at 2026-06-06T22:00:00+09:00
+npm run cli -- review-export --dry-run \
+  --vault /path/to/Vault \
+  --records /path/to/records
+npm run cli -- review-import --dry-run \
+  --vault /path/to/Vault \
+  --records /path/to/records \
+  --decided-by reviewer-id \
+  --reason "Evidence checked" \
+  --decided-at 2026-06-06T23:00:00+09:00
+npm test
+npm run typecheck
+npm audit
+```
+
+The CLI reads `./records` by default. Use another audit directory with:
+
+```bash
+npm run cli -- freshness --dry-run --records /path/to/records
+```
+
+Current dependency versions can be supplied explicitly:
+
+```bash
+npm run cli -- freshness --dry-run \
+  --model-provider ollama \
+  --model-name qwen3 \
+  --model-version model-v2 \
+  --rule-version rule-v2 \
+  --review-criteria-version review-v2
+```
+
+The dry-run prints `stale` and `obsolete` candidates but never writes records.
+Candidates do not cause a non-zero exit code; invalid input and execution
+errors do.
+
+Proposal generation uses a deterministic stub generator. It requires Vault
+`noteId` and body hash to match the latest stored `SourceNote`. Dry-run writes
+nothing; `--write` stores only proposed drafts under `records/artifacts/`.
+
+## Main API
+
+- `evaluateArtifactFreshness()`
+- `transitionArtifactStatus()`
+- `createReviewDecision()`
+- `createStalenessEvent()`
+- `createObsolescenceEvent()`
+- `applyFreshnessEvaluation()`
+- `regenerateArtifact()`
+- `JsonAuditStore`
+- `scanObsidianVault()`
+- `generateProposalDrafts()`
+- `exportReviewMarkdown()`
+- `importManualReviewDecisions()`
+
+Event IDs, timestamps, and evaluator identities are supplied by the caller so
+that all core functions remain deterministic and testable.
+
+## JSON Storage Adapter
+
+`JsonAuditStore` persists the audit model without Obsidian, Qdrant, Ollama, or
+network access:
+
+```text
+records/
+  source-notes/
+  artifacts/
+  reviews/
+  events/
+```
+
+Source-note versions, review decisions, and lifecycle events are append-only.
+Artifact content is append-only after creation; only its status projection may
+be updated through `applyReviewDecision()` or `applyLifecycleEvent()`.
+
+`reconstructState()` derives current artifact status from decisions and events
+instead of trusting the stored status projection.
+
+## Read-Only Obsidian Vault Adapter
+
+`scanObsidianVault()` reads Markdown from `source/` or a configured
+Vault-relative folder:
+
+```ts
+const report = await scanObsidianVault("/path/to/Vault", {
+  sourceFolder: "04_Observations",
+});
+```
+
+It reads `noteId` from YAML frontmatter and calculates a SHA-256 hash from the
+canonicalized Markdown body. Frontmatter, including AI-managed fields, is
+excluded from the hash. Notes without `noteId` are reported as
+`missing_note_id`; the adapter never generates or writes an ID.
+
+Absolute source-folder paths, traversal segments, and symlink traversal are not
+allowed. The adapter does not write to the Vault.
+
+## Stub Proposal Generator
+
+The stub generator creates:
+
+- one `classification` draft for each eligible source note;
+- one `related_candidate` draft for each eligible note pair.
+
+Every draft has evidence, separated retrieval/reasoning/overall confidence,
+`interpretation` knowledge type, and `proposed` status. It never edits Markdown
+or writes reviews and events.
+
+## Review Markdown Export
+
+`exportReviewMarkdown()` renders proposed, stale, and obsolete proposal
+artifacts into a dedicated Vault-relative folder, `ai-review/` by default.
+Each note displays artifact identity, sources, evidence, confidence, model,
+policy versions, and display-only approve/reject/defer checkboxes.
+
+Dry-run returns the complete Markdown plan without creating a directory.
+Traversal, absolute output paths, source-folder overlap, and symlink output
+paths are rejected. The exporter never writes under the configured source
+folder.
+
+## Manual Review Import
+
+`importManualReviewDecisions()` reads the three checkboxes in each
+`ai-review/*.md` file. Exactly one checked outcome is accepted; unchecked notes
+are skipped and multiple checks are rejected.
+
+The importer verifies `artifactId`, filename, and `artifactHash` against the
+audit store. Dry-run plans decisions without writes. Write mode creates an
+append-only `ReviewDecision` and changes artifact status only through
+`JsonAuditStore.applyReviewDecision()`. Reviewer identity, reason, and decision
+time are mandatory. Source Markdown is never modified.
+
+## Source Documents
+
+- `../ai-derived-artifact.schema.md`
+- `../ai-derived-artifact.state-transition-tests.md`

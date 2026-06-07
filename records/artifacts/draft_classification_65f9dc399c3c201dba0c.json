@@ -1,0 +1,61 @@
+{
+  "artifactId": "draft_classification_65f9dc399c3c201dba0c",
+  "artifactHash": "sha256:4aeba80afcaf856de71518f70ab6d92ac9590e32824866f3fac4483388be5589",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-012": "sha256:32fe3005ac3b268a7782248bfa62e116eec008d5988c9556b8eb91e8d66145c1"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "behavior",
+    "labels": [
+      "behavior"
+    ],
+    "summary": "Mock classification: behavior. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: behavior. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-012",
+      "sourceHash": "sha256:32fe3005ac3b268a7782248bfa62e116eec008d5988c9556b8eb91e8d66145c1",
+      "quote": "# おやつ場面"
+    },
+    {
+      "noteId": "obs-2026-012",
+      "sourceHash": "sha256:32fe3005ac3b268a7782248bfa62e116eec008d5988c9556b8eb91e8d66145c1",
+      "quote": "Tさんはおやつの時間に席に着くと、おやつが配られる前から両手をテーブルの上で組んで待機していた。"
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.484Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:32fe3005ac3b268a7782248bfa62e116eec008d5988c9556b8eb91e8d66145c1",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.484Z"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "noteId": "obs-2026-013",
+  "sourceVersion": 1,
+  "sourceHash": "sha256:83b714c5b72172fa913f2ef0f217200fdfc78b3336c51563ea61aebf72701c6f",
+  "knowledgeType": "observation",
+  "createdAt": "2026-06-06T14:02:45.205Z",
+  "updatedAt": "2026-06-06T14:02:45.205Z",
+  "immutablePolicy": "ai_must_not_edit_body",
+  "body": "# 朝の会への参加\n\nB.Kさんは朝の会で、名前を呼ばれた際に「はい」と返事をしながら手を挙げた。天気カードの選択では窓の外を確認してから「くもり」のカードを正しく選んだ。今日のスケジュールの読み上げの際には、写真カードを指差しながら注目していた。会の終了後にイスを元の位置に戻す行動が自発的に見られた。\n"
+}

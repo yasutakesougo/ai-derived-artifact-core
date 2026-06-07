@@ -1,0 +1,61 @@
+{
+  "artifactId": "draft_classification_a438f8ed9466b6dacc1a",
+  "artifactHash": "sha256:27a2856c8de9326a4a380fb5452e4518e24e7fd1ded3ccb90afc4400b040e130",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-006": "sha256:c93398ef3b448ec33309ec82500db4ac634a3c4ebb96c433d20d5bd827875ed2"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "observation",
+    "labels": [
+      "observation"
+    ],
+    "summary": "Mock classification: observation. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: observation. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-006",
+      "sourceHash": "sha256:c93398ef3b448ec33309ec82500db4ac634a3c4ebb96c433d20d5bd827875ed2",
+      "quote": "# 午後の自由時間"
+    },
+    {
+      "noteId": "obs-2026-006",
+      "sourceHash": "sha256:c93398ef3b448ec33309ec82500db4ac634a3c4ebb96c433d20d5bd827875ed2",
+      "quote": "Tさんは自由時間に本棚から図鑑を選び、テーブルに座って閲覧した。"
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.472Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:c93398ef3b448ec33309ec82500db4ac634a3c4ebb96c433d20d5bd827875ed2",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.472Z"
+  }
+}

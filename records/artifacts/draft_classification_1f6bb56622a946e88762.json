@@ -1,0 +1,61 @@
+{
+  "artifactId": "draft_classification_1f6bb56622a946e88762",
+  "artifactHash": "sha256:1170c84a5ad3ec4b4855cdd0860a085300970e41c44bfa86ff841beb813e52fc",
+  "status": "proposed",
+  "sourceHashes": {
+    "obs-2026-010": "sha256:7419c4a80b40e2e01f7e302705466fe03351728197eaa0a6dc5482e333b3f8c4"
+  },
+  "referencedArtifactHashes": {},
+  "relationships": [],
+  "model": {
+    "provider": "ollama",
+    "name": "qwen3:8b",
+    "version": "sha256:mock_digest_for_validation_run"
+  },
+  "ruleVersion": "ollama-classification-v1",
+  "reviewCriteriaVersion": "review-policy-v1",
+  "kind": "classification",
+  "knowledgeType": "interpretation",
+  "content": {
+    "classification": "observation",
+    "labels": [
+      "observation"
+    ],
+    "summary": "Mock classification: observation. Extracted from note content.",
+    "statement": "Ollama classification: Mock classification: observation. Extracted from note content."
+  },
+  "confidence": {
+    "retrieval": 0.92,
+    "reasoning": 0.91,
+    "overall": 0.93
+  },
+  "evidence": [
+    {
+      "noteId": "obs-2026-010",
+      "sourceHash": "sha256:7419c4a80b40e2e01f7e302705466fe03351728197eaa0a6dc5482e333b3f8c4",
+      "quote": "# 屋外活動（公園）"
+    },
+    {
+      "noteId": "obs-2026-010",
+      "sourceHash": "sha256:7419c4a80b40e2e01f7e302705466fe03351728197eaa0a6dc5482e333b3f8c4",
+      "quote": "Sさんは公園の遊具に向かい、滑り台に登った。"
+    }
+  ],
+  "generatedAt": "2026-06-06T14:03:13.479Z",
+  "generationContext": {
+    "provider": "ollama",
+    "task": "classification",
+    "promptVersion": "classification-prompt-v1",
+    "promptHash": "sha256:f38fcefd305a3fbff8cd6a9340b1564aa5971f7902f3ec2edba1d918b27d7bbc",
+    "inputHash": "sha256:7419c4a80b40e2e01f7e302705466fe03351728197eaa0a6dc5482e333b3f8c4",
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "sha256:mock_digest_for_validation_run"
+    },
+    "parameters": {
+      "temperature": 0,
+      "top_p": 1
+    },
+    "generatedAt": "2026-06-06T14:03:13.479Z"
+  }
+}
