@@ -115,5 +115,74 @@ for (let attempt = 1; attempt <= retryCount + 1; attempt += 1) {
 
 const output = response?.choices?.[0]?.message?.content ?? '';
 
-console.log('\n--- NVIDIA NIM file review ---\n');
-console.log(output);
+// Validate and parse JSON response
+function validateReviewJSON(jsonString) {
+  let parsed;
+  
+  // Try to extract JSON from the response
+  try {
+    // First, try direct parsing
+    parsed = JSON.parse(jsonString);
+  } catch {
+    // Try to extract JSON object from the response
+    const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON object found in response');
+    }
+    try {
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      throw new Error(`Invalid JSON format: ${e.message}`);
+    }
+  }
+
+  // Validate required fields and types
+  const errors = [];
+
+  // Validate decision
+  if (!parsed.decision || !['approve', 'needs_review', 'reject'].includes(parsed.decision)) {
+    errors.push(
+      `Invalid decision: expected "approve", "needs_review", or "reject", got "${parsed.decision}"`
+    );
+  }
+
+  // Validate reason
+  if (typeof parsed.reason !== 'string' || parsed.reason.trim() === '') {
+    errors.push('reason must be a non-empty string');
+  }
+
+  // Validate suggestedTitle
+  if (typeof parsed.suggestedTitle !== 'string') {
+    errors.push(`suggestedTitle must be a string, got ${typeof parsed.suggestedTitle}`);
+  }
+
+  // Validate riskNotes
+  if (!Array.isArray(parsed.riskNotes) || !parsed.riskNotes.every((item) => typeof item === 'string')) {
+    errors.push('riskNotes must be an array of strings');
+  }
+
+  // Validate confidence
+  if (!parsed.confidence || !['low', 'medium', 'high'].includes(parsed.confidence)) {
+    errors.push(
+      `Invalid confidence: expected "low", "medium", or "high", got "${parsed.confidence}"`
+    );
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Validation failed:\n  - ${errors.join('\n  - ')}`);
+  }
+
+  return parsed;
+}
+
+try {
+  const reviewJSON = validateReviewJSON(output);
+  console.log('\n--- NVIDIA NIM file review (validated) ---\n');
+  console.log(JSON.stringify(reviewJSON, null, 2));
+} catch (error) {
+  console.error('\n--- Review JSON validation failed ---\n');
+  console.error(`Error: ${error.message}`);
+  console.error('\nRaw response from NVIDIA NIM:');
+  console.error(output);
+  process.exit(1);
+}
