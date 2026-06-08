@@ -7,6 +7,7 @@
     "cli": "tsx src/cli.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "check:safety": "node scripts/check-public-safety.mjs",
     "probe:nvidia": "node scripts/ai/nvidia-nim-probe.mjs",
     "review:nvidia": "node scripts/ai/nvidia-nim-review-file.mjs",
     "review:nvidia:batch": "node scripts/ai/nvidia-nim-review-batch.mjs"

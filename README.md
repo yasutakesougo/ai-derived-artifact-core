@@ -189,10 +189,10 @@ enabling integration with external AI providers.
 
 ### Setup
 
-1. Create `.env` file with credentials:
-   ```
-   NVIDIA_API_KEY=your-api-key-here
-   NVIDIA_MODEL=nvidia/meta-llama-3.1-405b-instruct
+1. Create a local `.env` file with credentials. Do not commit this file:
+   ```text
+   Set NVIDIA_API_KEY to your NVIDIA API key.
+   Set NVIDIA_MODEL to the NVIDIA model id, for example nvidia/meta-llama-3.1-405b-instruct.
    ```
 
 2. Verify type safety and tests:
