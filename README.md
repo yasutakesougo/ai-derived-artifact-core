@@ -181,6 +181,88 @@ append-only `ReviewDecision` and changes artifact status only through
 `JsonAuditStore.applyReviewDecision()`. Reviewer identity, reason, and decision
 time are mandatory. Source Markdown is never modified.
 
+## NVIDIA NIM Review Workflow
+
+The NVIDIA NIM review workflow provides safe, reliable artifact review using
+NVIDIA's OpenAI-compatible API. It validates all JSON responses before use,
+enabling integration with external AI providers.
+
+### Setup
+
+1. Create `.env` file with credentials:
+   ```
+   NVIDIA_API_KEY=your-api-key-here
+   NVIDIA_MODEL=nvidia/meta-llama-3.1-405b-instruct
+   ```
+
+2. Verify type safety and tests:
+   ```bash
+   npm run typecheck
+   npm test
+   ```
+
+### Single-File Review
+
+Review a single artifact and display the NVIDIA NIM decision:
+
+```bash
+npm run review:nvidia -- /path/to/artifact.md
+```
+
+Output includes decision (approve/needs_review/reject), confidence level, and
+validation details.
+
+### Batch Review
+
+Process multiple artifacts with rate-limiting (1 second between API calls):
+
+```bash
+npm run review:nvidia:batch -- file1.md file2.md file3.md
+```
+
+Output includes:
+- Per-file decisions with confidence levels
+- Summary statistics (total/approved/needs_review/rejected/failed)
+- Detailed JSON results for downstream processing
+
+### Validation
+
+The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are
+safe before use:
+
+- Extracts valid JSON from API response text
+- Validates required fields: `decision`, `reason`, `suggestedTitle`,
+  `riskNotes[]`, `confidence`
+- Type-checks field values:
+  - `decision`: one of `approve` | `needs_review` | `reject`
+  - `confidence`: one of `low` | `medium` | `high`
+  - `reason`: non-empty string
+  - `suggestedTitle`: non-empty string
+  - `riskNotes`: string array (required for `needs_review` decisions)
+- Throws descriptive errors on validation failure
+
+### Testing
+
+- Unit tests: 37 tests covering all validator functions and edge cases
+- E2E tests: 9 tests validating batch review workflow with mock data
+
+```bash
+npm test
+```
+
+### Security
+
+- `.env` is ignored in `.gitignore`; credentials are never committed
+- Validator functions are pure (no side effects)
+- Error messages do not leak sensitive data
+- Batch processing respects API rate limits
+
+### Notes
+
+- NVIDIA NIM integration is a manual CLI workflow; not required in CI/CD
+- Suitable for code reviewer guidance and artifact validation
+- All validation occurs before output to prevent partial data exposure
+
 ## Source Documents
 
 - `../ai-derived-artifact.schema.md`
