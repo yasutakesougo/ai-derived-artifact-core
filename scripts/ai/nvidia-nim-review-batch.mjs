@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import fs from 'node:fs/promises';
 import OpenAI from 'openai';
+import { resolveReviewFilePath } from './nvidia-nim-paths.mjs';
 
 // 環境変数の読み込み
 const apiKey = process.env.NVIDIA_API_KEY;
@@ -62,7 +63,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function reviewFile(filePath, index, total) {
   try {
-    const resolvedPath = new URL(`file://${filePath}`).pathname;
+    const resolvedPath = resolveReviewFilePath(filePath);
     const content = await fs.readFile(resolvedPath, 'utf8');
     const reviewContent =
       content.length > maxInputChars

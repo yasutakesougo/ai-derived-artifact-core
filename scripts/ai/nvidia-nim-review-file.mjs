@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import OpenAI from 'openai';
+import { resolveReviewFilePath } from './nvidia-nim-paths.mjs';
 
 const apiKey = process.env.NVIDIA_API_KEY;
 const model = process.env.NVIDIA_MODEL;
@@ -27,7 +27,7 @@ if (!targetPath) {
   process.exit(1);
 }
 
-const resolvedPath = path.resolve(targetPath);
+const resolvedPath = resolveReviewFilePath(targetPath);
 const content = await fs.readFile(resolvedPath, 'utf8');
 const reviewContent =
   content.length > maxInputChars

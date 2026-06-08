@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.1.1 - NVIDIA NIM Review Workflow Operations Fixes
+
+### Fixed
+
+- Fixed NVIDIA NIM batch review relative path handling so paths such as
+  `test/fixtures/nvidia-nim/*.md` resolve from the current working directory
+  instead of being misread as `/fixtures/...`.
+- Aligned `suggestedTitle` documentation with the validator and prompts:
+  the field is required, but the value may be an empty string when no storage
+  title is suggested.
+
+### Added
+
+- Regression tests for NVIDIA NIM review path resolution.
+- README notes for relative and absolute path support in batch review.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.1.0 - NVIDIA NIM Review Workflow v0
 
 This release marks the first stable baseline for the NVIDIA NIM artifact review

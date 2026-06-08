@@ -220,6 +220,9 @@ Process multiple artifacts with rate-limiting (1 second between API calls):
 npm run review:nvidia:batch -- file1.md file2.md file3.md
 ```
 
+Relative paths are resolved from the current working directory. Absolute paths
+are also supported.
+
 Output includes:
 - Per-file decisions with confidence levels
 - Summary statistics (total/approved/needs_review/rejected/failed)
@@ -237,7 +240,7 @@ safe before use:
   - `decision`: one of `approve` | `needs_review` | `reject`
   - `confidence`: one of `low` | `medium` | `high`
   - `reason`: non-empty string
-  - `suggestedTitle`: non-empty string
+  - `suggestedTitle`: string; may be empty when no storage title is suggested
   - `riskNotes`: string array (required for `needs_review` decisions)
 - Throws descriptive errors on validation failure
 
