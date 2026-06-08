@@ -3,18 +3,19 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 
 describe('NVIDIA NIM Batch Review E2E Tests', () => {
-  const testArtifactsDir = path.resolve(import.meta.dirname, '..', 'scratch');
+  const testArtifactsDir = path.resolve(import.meta.dirname, 'fixtures', 'nvidia-nim');
   const testFile1 = path.join(testArtifactsDir, 'test-artifact-1.md');
   const testFile2 = path.join(testArtifactsDir, 'test-artifact-2.md');
   const testFile3 = path.join(testArtifactsDir, 'test-artifact-3.md');
 
   // Helper to create a mock batch script output inline
   const createMockOutput = (filePaths: string[], responses: Record<string, object>) => {
-    const results = [];
+    const results: Array<Record<string, unknown>> = [];
     let output = `\n--- NVIDIA NIM batch review (${filePaths.length} files) ---\n\n`;
 
     for (let i = 0; i < filePaths.length; i++) {
       const file = filePaths[i];
+      if (!file) continue;
       const basename = file.split('/').pop() || 'unknown';
       output += `Processing [${i + 1}/${filePaths.length}] ${file}...\n`;
 
@@ -25,14 +26,14 @@ describe('NVIDIA NIM Batch Review E2E Tests', () => {
         riskNotes: [],
         confidence: 'high',
       };
-      results.push({ file, success: true, ...response });
+      results.push({ file, success: true, ...(response as Record<string, unknown>) });
       output += `  ✓ ${(response as Record<string, unknown>).decision} (confidence: ${(response as Record<string, unknown>).confidence})\n`;
     }
 
     output += '\n--- Summary ---\n\n';
-    const approved = results.filter((r) => r.decision === 'approve').length;
-    const needsReview = results.filter((r) => r.decision === 'needs_review').length;
-    const rejected = results.filter((r) => r.decision === 'reject').length;
+    const approved = results.filter((r) => (r as Record<string, unknown>).decision === 'approve').length;
+    const needsReview = results.filter((r) => (r as Record<string, unknown>).decision === 'needs_review').length;
+    const rejected = results.filter((r) => (r as Record<string, unknown>).decision === 'reject').length;
 
     output += `Total: ${filePaths.length}\n`;
     output += `  Approved: ${approved}\n`;
@@ -90,7 +91,7 @@ describe('NVIDIA NIM Batch Review E2E Tests', () => {
     const results = extractJsonFromOutput(output);
     expect(results).not.toBeNull();
     expect(results).toHaveLength(1);
-    expect(results?.[0].decision).toBe('approve');
+    expect(results?.[0]?.decision).toBe('approve');
   });
 
   it('should process multiple files with mixed decisions', () => {
@@ -129,9 +130,9 @@ describe('NVIDIA NIM Batch Review E2E Tests', () => {
     const results = extractJsonFromOutput(output);
     expect(results).not.toBeNull();
     expect(results).toHaveLength(3);
-    expect(results?.[0].decision).toBe('approve');
-    expect(results?.[1].decision).toBe('needs_review');
-    expect(results?.[2].decision).toBe('reject');
+    expect(results?.[0]?.decision).toBe('approve');
+    expect(results?.[1]?.decision).toBe('needs_review');
+    expect(results?.[2]?.decision).toBe('reject');
   });
 
   it('should display correct statistics for approval workflow', () => {
@@ -322,9 +323,11 @@ describe('NVIDIA NIM Batch Review E2E Tests', () => {
     expect(results).not.toBeNull();
     if (results && results.length > 0) {
       const result = results[0];
-      expect(result.decision).toBe('needs_review');
-      expect(Array.isArray(result.riskNotes)).toBe(true);
-      expect((result.riskNotes as unknown[]).length).toBeGreaterThan(0);
+      if (result) {
+        expect(result.decision).toBe('needs_review');
+        expect(Array.isArray(result.riskNotes)).toBe(true);
+        expect((result.riskNotes as unknown[]).length).toBeGreaterThan(0);
+      }
     }
   });
 });
