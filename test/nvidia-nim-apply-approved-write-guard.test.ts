@@ -75,4 +75,26 @@ describe("NVIDIA NIM review apply-approved write guard", () => {
     expect(output).toContain("Unknown option: --write");
     expect(output).toContain("Usage: npm run review:apply-approved-preview -- apply-approved-plan.json");
   });
+
+  it("rejects --write in apply-approved-preflight command", async () => {
+    const inputPath = fixturePath("reviews-apply-approved-plan.expected.json");
+    let output = "";
+    let exitCode = 0;
+
+    try {
+      await execFileAsync(
+        "node",
+        ["scripts/ai/nvidia-nim-apply-approved-preflight.mjs", "--write", inputPath],
+        { cwd: process.cwd(), encoding: "utf8" },
+      );
+    } catch (error) {
+      output = (error as { stdout?: string; stderr?: string }).stdout ?? "";
+      output += (error as { stdout?: string; stderr?: string }).stderr ?? "";
+      exitCode = (error as { code?: number }).code ?? 1;
+    }
+
+    expect(exitCode).toBe(1);
+    expect(output).toContain("Unknown option: --write");
+    expect(output).toContain("Usage: npm run review:apply-approved-preflight -- [--allowlist PATH] [--expected-plan-hash HASH] [--expected-input-path PATH] [--expected-input-hash HASH] apply-approved-plan.json");
+  });
 });

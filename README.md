@@ -523,6 +523,37 @@ command.
 The command rejects write-oriented options (for example `--write`), so preview
 output is always side-effect free.
 
+### Apply Approved Write Preflight (Gated)
+
+Before passing a validated plan into any future write flow, run a dedicated
+preflight check that enforces the gate conditions:
+
+```bash
+npm run review:apply-approved-preflight -- reviews-apply-approved-plan.expected.json
+
+npm run review:apply-approved-preflight -- \
+  --allowlist /path/to/vault/root \
+  --expected-input-path /path/to/review-input.json \
+  --expected-input-hash <sha256> \
+  --expected-plan-hash <sha256> \
+  reviews-apply-approved-plan.expected.json
+```
+
+Current preflight checks:
+
+- `summary.approved === items.length`
+- `summary.warnings === warnings.length`
+- warnings must be zero (pending warnings block preflight)
+- each item path resolves under allowlist roots
+- optional lineage checks:
+  - planned input path equality (`--expected-input-path`)
+  - input hash equality (`--expected-input-hash`)
+  - full plan hash equality (`--expected-plan-hash`)
+
+Like previous stages, no real write occurs in this step.
+
+`--write` remains unsupported in this phase and is rejected.
+
 ### Apply Approved Preview Runbook (Pre-apply checks)
 
 Use this sequence before any `apply-approved-review` write integration work:

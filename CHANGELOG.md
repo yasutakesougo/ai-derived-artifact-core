@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.4.2 - NVIDIA NIM apply-approved write preflight validation (no-write)
+
+### Added
+
+- Added `review:apply-approved-preflight` to validate write-gate conditions before
+  any future apply-write flow.
+- Implemented preflight checks for:
+  - `summary.approved === items.length`
+  - `summary.warnings === warnings.length`
+  - warning absence gate (`warnings.length` must be zero)
+  - path allowlist resolution under default or explicitly configured roots
+  - lineage checks via `--expected-plan-hash` / `--expected-input-path` / `--expected-input-hash`
+- Added fixture-based regression tests for parse path, success/failure cases, and
+  warning/summary/path/lineage mismatches.
+- Added `--write` guard test for preflight command.
+
+### Not Included
+
+- 実装は行わない（`--write` 未実装のまま）。
+- 実ファイル更新 / records 書き込みなし。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.4.1 - NVIDIA NIM apply-approved write guard hardening (docs + tests, no-write)
 
 ### Added
