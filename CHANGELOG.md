@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.5.3 - apply-approved write output handoff boundary docs
+
+### Added
+
+- Added docs-only handoff boundary for `review:apply-approved-write-validate` outputs
+  before existing system integration.
+- Fixed the integration contract between `ai-derived-artifact-core` and
+  `audit-management-system-mvp` in documentation:
+  - required schema fields and required invariants
+  - write output source/target path and preflight fields
+  - all-or-nothing handoff requirement
+  - no partial handoff on validation/preflight failure
+- Added guidance for boundary sequence:
+  - generate write output -> validate -> handoff
+  - no records/SharePoint/source writes at this boundary stage
+
+### Not Included
+
+- 既存システムへの実組み込み（`audit-management-system-mvp` 側の受け取り実装）は行わない。
+- 実データ更新 / records / SharePoint 書き込みは行わない。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.5.2 - apply-approved write output validator
 
 ### Added

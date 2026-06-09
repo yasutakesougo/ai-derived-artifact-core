@@ -597,6 +597,48 @@ Validation checks:
 
 On validation failure, it prints the error and exits non-zero.
 
+### Apply Approved Write Output Handoff Boundary (to audit-management-system-mvp)
+
+This section defines the integration boundary before actual `audit-management-system-mvp`
+`apply-approved` execution.
+
+Current repository scope (v0.5.2):
+
+- This package produces and validates synthetic/safe JSON artifacts only.
+- It does **not** call external API for apply, and does **not** write records,
+  source notes, SharePoint artifacts, or real source data.
+- Import into existing systems is a boundary step that is intentionally not
+  implemented yet.
+
+Handoff contract:
+
+- Input to the next system must be:
+  - `review:apply-approved-write-validate`-validated JSON
+  - `schemaVersion === nvidia-nim-apply-approved-preview/1.0`
+  - stable `generatedAt`, `inputPath`, `outputPath`
+  - `summary.total`, `summary.approved`, `summary.warnings`
+  - `items[]` with all required fields:
+    - `artifactId`, `path`, `suggestedTitle`, `labels`, `reason`
+  - `warnings[]` with `type`, `line`, `message`, `raw?`
+  - `preflight` with `passed` and `failures[]`
+- Contract assumptions:
+  - `preflight.passed === true` before any handoff attempt.
+  - `items` is used as the authoritative approved set for `apply` planning.
+  - path allowlist and lineage checks are enforced by this package's write/preflight
+    stage before write output is produced.
+- Failure semantics:
+  - if any failure exists in validation or preflight, do not hand off.
+  - no partial handoff is permitted; handoff is all-or-nothing for this file.
+
+Recommended handoff sequence:
+
+1. Generate preview write output (`review:apply-approved-preview --write --out ...`).
+2. Validate schema (`review:apply-approved-write-validate -- ...`).
+3. On validation success, store as immutable handoff input for `audit-management-system-mvp`.
+
+For now, keep this phase as fixture/synthetic dry-run-only and do not connect this
+output to production apply paths until a dedicated integration change is introduced.
+
 ### Apply Approved Write Preflight (Gated)
 
 Before passing a validated plan into any future write flow, run a dedicated
