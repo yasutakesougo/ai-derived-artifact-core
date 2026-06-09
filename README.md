@@ -573,6 +573,46 @@ npm run review:apply-approved-preview -- test/fixtures/nvidia-nim/reviews-apply-
 
 Record any warning count mismatches and warning item messages in review handoff.
 
+### Apply Approved Write Acceptance Criteria (v0.4.0 precondition, docs only)
+
+Before implementing `--write` for approved application, execution must satisfy
+all acceptance criteria below. This section is documentation only and does not add
+write-path implementation.
+
+#### Mandatory pre-conditions
+
+- `review:apply-approved-preview` runbook (v0.3.5) is completed.
+- The input to write path is only a validated plan:
+  - `npm run review:apply-approved-validate -- <apply-approved-plan.json>` must succeed.
+  - `schemaVersion` must be exactly `nvidia-nim-apply-approved-dry-run/1.0`.
+- Preview and plan outputs must be reconciled:
+  - preview execution and plan content are re-run and compared for `artifactId`, `path`, `suggestedTitle`, `labels`, `reason`.
+  - all rendered candidates must be present in both views in the same order or with a stable sort.
+
+#### Gate conditions
+
+- `summary.approved` must equal the rendered candidate count.
+- Every warning in preview output must be reviewed by a human reviewer before write.
+- `records` writes and source-note writes are still disallowed until `--write` is intentionally introduced in a later version.
+- `--write` is not supported in this stage and must continue to return:
+
+`Unknown option: --write`.
+
+#### Safety envelope
+
+- Path allowlist:
+  - all apply targets must resolve under an approved vault root and must not
+    contain `..`, symlink traversal, or absolute path escapes.
+  - no target outside approved workspace prefixes is allowed.
+- Input integrity:
+  - checksum/lineage metadata of plan input is captured and compared to preview source before write.
+  - if checksum or source path changes between preview and write gate, operation must abort.
+- Partial apply prohibition:
+  - any unresolved warning, warning-summary mismatch, checksum mismatch, or path-allowlist violation must abort the whole batch.
+- Failure behavior:
+  - failures are non-partial: either all items are applied or none are applied (all-or-nothing for this stage).
+  - on any failure, no source note is modified and no records are written.
+
 ### Apply Approved Plan Validation
 
 Validate a schema-stabilized apply-approved plan JSON before passing to an

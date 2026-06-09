@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.4.0 - NVIDIA NIM apply-approved write acceptance criteria (pre-write, docs-only)
+
+### Added
+
+- Added pre-write acceptance criteria for future `apply-approved` write integration:
+  - required v0.3.5 preview runbook completion
+  - validated plan requirement (`review:apply-approved-validate` success only)
+  - preview and plan output reconciliation
+  - summary/warning gate checks
+  - path allowlist and checksum/lineage checks
+  - partial-apply prohibition and all-or-nothing failure semantics
+
+### Not Included
+
+- 実装は行わない（`--write` 未実装のまま）。
+- 実ファイル更新／records 書き込みなし。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.3.5 - NVIDIA NIM apply-approved preview runbook
 
 ### Added
