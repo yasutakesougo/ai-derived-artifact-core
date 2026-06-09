@@ -517,11 +517,41 @@ Output includes:
 - `artifactId`, `path`, `suggestedTitle`, `labels`, `reason` for each valid item
 - warnings list if `warnings[]` is present
 
-No `--write` mode, no records, and no source-note updates are performed in this
-command.
+No records, and no source-note updates are performed in this command (preview-only
+execution before write-gate).
 
-The command rejects write-oriented options (for example `--write`), so preview
-output is always side-effect free.
+### Apply Approved Preview (Write Gated, Synthetic-Only)
+
+In `v0.5.0`, `--write` is introduced as a gated synthetic preview export:
+
+```bash
+npm run review:apply-approved-preview -- --write --out apply-preview.md \
+  --allowlist /path/to/synthetic-root \
+  --expected-input-path /path/to/source.txt \
+  --expected-input-hash <sha256> \
+  --expected-plan-hash <sha256> \
+  reviews-apply-approved-plan.expected.json
+```
+
+For `--write`, all checks must pass before the write output is produced:
+
+- preflight checks:
+  - `summary.approved` equals rendered approve candidates
+  - `summary.warnings` equals rendered warnings count
+  - warnings are zero
+  - all item paths resolve under allowlist roots
+- optional lineage checks:
+  - `--expected-input-path`
+  - `--expected-input-hash`
+  - `--expected-plan-hash`
+
+Failure behavior:
+
+- On any preflight failure, output file is not written.
+- Command exits non-zero.
+
+Current behavior remains fixture/synthetic-oriented and does not apply to source
+files or `records`; it is a structured write path only.
 
 ### Apply Approved Write Preflight (Gated)
 

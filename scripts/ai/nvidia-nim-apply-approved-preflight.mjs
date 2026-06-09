@@ -48,7 +48,7 @@ function createFailure(code, message) {
   return { code, message };
 }
 
-function validateResolvedPath(candidateRawPath, baseDir, allowlistedRoots, index) {
+export function validateResolvedPath(candidateRawPath, baseDir, allowlistedRoots, index) {
   if (!candidateRawPath) {
     return createFailure('ALLOWLIST_INVALID_PATH', `item[${index}] path is empty`);
   }
@@ -143,7 +143,7 @@ export function parseApplyApprovedPreflightArgs(args, cwd = process.cwd()) {
   };
 }
 
-function deriveAllowlistRoots(inputPath, explicitRoots) {
+export function deriveAllowlistRoots(inputPath, explicitRoots) {
   if (explicitRoots.length > 0) {
     return [...new Set(explicitRoots.map((root) => resolve(root)))];
   }
@@ -156,11 +156,11 @@ async function hashFile(path) {
   return sha256(text);
 }
 
-function computePlanHash(payload) {
+export function computePlanHash(payload) {
   return sha256(stableStringify(payload));
 }
 
-async function validateLineage(payload, parsedArgs, inputPath) {
+export async function validateLineage(payload, parsedArgs, inputPath) {
   const failures = [];
   if (parsedArgs.expectedPlanHash) {
     const actualPlanHash = computePlanHash(payload);
@@ -203,24 +203,7 @@ async function validateLineage(payload, parsedArgs, inputPath) {
   return failures;
 }
 
-async function main() {
-  let parsedArgs;
-  try {
-    parsedArgs = parseApplyApprovedPreflightArgs(process.argv.slice(2));
-  } catch (error) {
-    console.error(error.message);
-    console.error(usage());
-    process.exit(1);
-  }
-
-  let payload;
-  try {
-    payload = await loadApplyApprovedValidateInput(parsedArgs.inputPath);
-  } catch (error) {
-    console.error(error.message);
-    process.exit(1);
-  }
-
+export async function collectApplyApprovedPreflightFailures(payload, parsedArgs) {
   const failures = [];
   const allowlistedRoots = deriveAllowlistRoots(parsedArgs.inputPath, parsedArgs.allowlist);
 
@@ -259,6 +242,28 @@ async function main() {
   }
 
   failures.push(...(await validateLineage(payload, parsedArgs, parsedArgs.inputPath)));
+  return failures;
+}
+
+async function main() {
+  let parsedArgs;
+  try {
+    parsedArgs = parseApplyApprovedPreflightArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error.message);
+    console.error(usage());
+    process.exit(1);
+  }
+
+  let payload;
+  try {
+    payload = await loadApplyApprovedValidateInput(parsedArgs.inputPath);
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+
+  const failures = await collectApplyApprovedPreflightFailures(payload, parsedArgs);
 
   if (failures.length > 0) {
     console.error('Write preflight failed:');

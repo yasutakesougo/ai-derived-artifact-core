@@ -1,5 +1,37 @@
 # Changelog
 
+## v0.5.0 - write-gated apply-approved preview (synthetic-only)
+
+### Added
+
+- Added `--write` support to `review:apply-approved-preview` with fixture/synthetic write target.
+- Added `--out` and write-gate flags to preview parser:
+  - `--allowlist PATH`
+  - `--expected-plan-hash HASH`
+  - `--expected-input-path PATH`
+  - `--expected-input-hash HASH`
+- `--write` now runs the same preflight-style checks before writing output:
+  - `summary.approved === items.length`
+  - `summary.warnings === warnings.length`
+  - warnings must be zero
+  - path allowlist checks via resolved candidate paths
+  - optional lineage/hash checks (`expectedInputHash`, `expectedInputPath`, `expectedPlanHash`)
+- Added regression coverage for:
+  - parse validation of write flags
+  - write path success with synthetic fixture input
+  - write path block when preflight fails
+  - missing allowlist rejection
+
+### Not Included
+
+- 実データ更新/records 書き込みは含めていない。`--write` は合成/fixture 用のプレビュー書き出しのみ。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.4.5 - apply-write implementation readiness checklist (docs-only)
 
 ### Added
