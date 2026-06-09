@@ -256,6 +256,22 @@ npm run review:import -- --only reject reviews.jsonl
 Output includes summary counts and failure handling. Broken JSON lines are
 treated as failed review records so they are visible during import.
 
+### JSONL Aggregate
+
+Aggregate `reviews.jsonl` into an audit-friendly summary for manual review:
+
+```bash
+npm run review:aggregate -- reviews.jsonl
+```
+
+Output includes:
+
+- summary: total / approve / needs_review / reject / failed
+- failed rows with line numbers and parse errors
+- extracted needs_review and reject candidates with artifactId/path/classification/reason
+
+No NVIDIA API calls are executed.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

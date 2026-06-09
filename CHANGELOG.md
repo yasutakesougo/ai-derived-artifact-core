@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.2 - NVIDIA NIM Review Aggregate (minimal)
+
+### Added
+
+- Added `review:aggregate` CLI to produce audit-oriented summaries from
+  `reviews.jsonl`.
+- Added summary counts: total / approve / needs_review / reject / failed.
+- Added failed-record listing including line number and parse error details.
+- Added needs_review and reject candidate extraction with artifactId/path/classification/reason.
+- Added regression coverage for aggregate parsing and output shape.
+
+### Not Included
+
+- Markdown report generation.
+- Automatic apply flow.
+- Records persistence integration.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.1 - NVIDIA NIM Review Import (JSONL)
 
 ### Added
