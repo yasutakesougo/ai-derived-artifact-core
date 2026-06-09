@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.5 - NVIDIA NIM Review Apply Plan (fixture validation)
+
+### Added
+
+- Added fixture-driven `NVIDIA NIM review apply-plan` regression coverage under
+  `test/fixtures/nvidia-nim`.
+- Added fixed mixed-decision JSONL fixture (`approve/needs_review/reject/failed`)
+  covering missing `suggestedTitle`, `labels`, and `reason` cases.
+- Added markdown snapshot-style assertion for `--out` report output.
+
+### Not Included
+
+- Runtime write mode.
+- Production `apply`/`records` integration.
+- Human review UI integration.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.4 - NVIDIA NIM Review Apply Plan (minimal)
 
 ### Added

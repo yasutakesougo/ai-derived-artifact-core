@@ -1,0 +1,8 @@
+{"file":"fixture-a.md","artifactId":"artifact-a","success":true,"decision":"approve","suggestedTitle":"Artifact Alpha","labels":["gold","high-confidence"],"reason":"Looks consistent with policy","confidence":"high"}
+{"file":"fixture-b.md","success":true,"decision":"needs_review","suggestedTitle":"Artifact Beta","labels":["risk"],"reason":"Needs manual check","riskNotes":["Ambiguous statement"],"confidence":"medium"}
+{"file":"fixture-c.md","artifactId":"artifact-c","success":true,"decision":"approve","labels":["safe"],"reason":"Auto-approved by model","confidence":"high"}
+{"file":"fixture-d.md","artifactId":"artifact-d","success":true,"decision":"approve","suggestedTitle":"","labels":[],"reason":"No title suggestion","confidence":"medium"}
+{"file":"fixture-e.md","success":false,"decision":"approve","reason":"Model timeout"}
+{"file":"fixture-f.md","artifactId":"artifact-f","success":true,"decision":"reject","suggestedTitle":"Artifact Phi","labels":["obsolete"],"reason":"Conflict with criteria","confidence":"low"}
+{"bad-json-line
+{"file":"fixture-g.md","artifactId":"artifact-g","success":true,"decision":"approve","reason":null,"confidence":"high"}

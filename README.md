@@ -312,6 +312,8 @@ Output includes:
 
 No writes are performed; this is preview only and does not apply any file or record updates.
 No NVIDIA API calls are executed.
+`test/fixtures/nvidia-nim/reviews-apply-plan.jsonl` provides a fixed fixture input
+for this verification path.
 
 ### Validation
 

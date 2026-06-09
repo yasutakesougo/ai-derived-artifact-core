@@ -135,4 +135,42 @@ describe("NVIDIA NIM review apply-plan helpers", () => {
     expect(await readFile(outputPath, "utf8")).toContain("| a | artifact-a.md | Useful Artifact | label-a | Looks complete |");
     expect(await readFile(outputPath, "utf8")).toContain("line 2");
   });
+
+  it("uses fixture JSONL and verifies apply-plan output snapshot", async () => {
+    const fixtureInput = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-plan.jsonl");
+    const expectedMarkdown = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-plan.expected.md");
+    const outputPath = join(root, "apply-plan.md");
+
+    let output = "";
+    let exitCode = 0;
+    try {
+      await execFileAsync(
+        "node",
+        ["scripts/ai/nvidia-nim-apply-plan.mjs", "--out", outputPath, fixtureInput],
+        { cwd: process.cwd() },
+      );
+    } catch (error) {
+      output = (error as { stdout?: string }).stdout ?? "";
+      exitCode = (error as { code?: number }).code ?? 1;
+    }
+
+    const outputText = await readFile(outputPath, "utf8");
+    const expectedText = await readFile(expectedMarkdown, "utf8");
+    const normalizedOutput = outputText.replace(`Input: ${fixtureInput}`, "Input: INPUT_PATH_PLACEHOLDER");
+
+    expect(exitCode).toBe(1);
+    expect(output).toContain("Apply plan written:");
+    expect(output).toContain("Total: 8");
+    expect(output).toContain("Approved: 4");
+    expect(output).toContain("Failed: 2");
+    expect(output).toContain("- artifact-a");
+    expect(output).toContain("  path: fixture-a.md");
+    expect(output).not.toContain("artifact-b");
+    expect(output).not.toContain("artifact-f");
+    expect(output).not.toContain("Needs manual check");
+    expect(output).toContain("Failed lines:");
+    expect(output).toContain("line 5");
+    expect(output).toContain("line 7");
+    expect(normalizedOutput.trim()).toBe(expectedText.trim());
+  });
 });
