@@ -4,7 +4,7 @@ import { parseReviewImportJsonl } from './nvidia-nim-review-import.mjs';
 import { buildApplyPlanRecords } from './nvidia-nim-apply-plan.mjs';
 import { resolveCliPath } from './nvidia-nim-paths.mjs';
 
-const APPLY_DRY_RUN_SCHEMA_VERSION = 'nvidia-nim-apply-dry-run/1.0';
+export const APPLY_DRY_RUN_SCHEMA_VERSION = 'nvidia-nim-apply-dry-run/1.0';
 
 function usage() {
   return 'Usage: npm run review:apply-dry-run -- [--json] [--out apply-dry-run.md|.json] apply-bridge.json|reviews.jsonl';

@@ -401,6 +401,30 @@ Only approved items are included in the apply payload preview.
 No records or source files are modified (dry-run only).
 No NVIDIA API calls are executed.
 
+### Apply Validate
+
+Validate a dry-run payload before wiring to apply handling:
+
+```bash
+npm run review:apply-validate -- test/fixtures/nvidia-nim/reviews-apply-dry-run.expected.json
+```
+
+Validation checks:
+
+- `schemaVersion === nvidia-nim-apply-dry-run/1.0`
+- `summary.total / summary.approved / summary.failed`
+- `items[]` required fields:
+  - `artifactId`
+  - `path`
+  - `suggestedTitle`
+  - `labels`
+  - `reason`
+- `failed[]` required fields:
+  - `line`
+  - `error`
+
+On validation failure, it prints the cause and exits non-zero.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

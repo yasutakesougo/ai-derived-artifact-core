@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.2.9 - NVIDIA NIM Review Apply Validation
+
+### Added
+
+- Added `review:apply-validate` CLI to validate `review:apply-dry-run` JSON payloads
+  before downstream apply wiring.
+- Added schema checks for:
+  - `schemaVersion`
+  - `summary`
+  - `items[]`
+  - `failed[]`
+  - `items[*]` required fields: `artifactId`, `path`, `suggestedTitle`, `labels`,
+    `reason`
+  - `failed[*]` required fields: `line`, `error`
+- Added fixture-based tests for success and common schema-invalid cases.
+
+### Not Included
+
+- `--write` mode.
+- 実ファイル / records 反映。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.8 - NVIDIA NIM Review Apply Dry-Run (schema stabilization)
 
 ### Changed
