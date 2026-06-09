@@ -425,6 +425,24 @@ Validation checks:
 
 On validation failure, it prints the cause and exits non-zero.
 
+### Apply Receive (Preview)
+
+Receive and preview a validated `review:apply-dry-run` payload for future
+`apply-approved-review` handoff:
+
+```bash
+npm run review:apply-receive -- test/fixtures/nvidia-nim/reviews-apply-dry-run.expected.json
+```
+
+Output includes:
+
+- payload validation summary
+- candidate `artifactId`, `path`, `suggestedTitle`, `labels`, `reason`
+- warning when failed rows exist
+
+No `--write` mode, no records, and no source-note updates are performed in
+this command.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

@@ -27,6 +27,29 @@
 - `npm run typecheck`
 - `npm test`
 
+## v0.2.10 - NVIDIA NIM Review Apply Receive
+
+### Added
+
+- Added `review:apply-receive` CLI to connect validated dry-run payloads to a
+  lightweight receive flow.
+- Reused `review:apply-validate`-style validation to accept only compatible
+  payloads.
+- Added stdout reporting of apply candidates (`artifactId`, `path`,
+  `suggestedTitle`, `labels`, `reason`).
+- Added warning output when `failed[]` rows are present.
+- Did not add real write/apply behavior (no `--write` yet).
+
+### Not Included
+
+- records / real source-file updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.8 - NVIDIA NIM Review Apply Dry-Run (schema stabilization)
 
 ### Changed

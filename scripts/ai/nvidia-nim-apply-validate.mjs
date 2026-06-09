@@ -148,7 +148,7 @@ function isObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function printValidationSummary(payload) {
+export function printValidationSummary(payload) {
   console.log('Validation passed: NVIDIA NIM apply-dry-run payload is valid for apply-approved-review receiver.');
   console.log(`schemaVersion: ${payload.schemaVersion}`);
   console.log(`inputPath: ${payload.inputPath}`);
