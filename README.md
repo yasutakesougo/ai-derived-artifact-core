@@ -651,6 +651,54 @@ Warnings approval flow before `--write` (future stage):
 3. Re-run preflight with the same allowlist and lineage parameters.
 4. Proceed only when warnings are zero and all failures are resolved.
 
+### Apply Approved Write Implementation Readiness Checklist (v0.4.5, docs-only)
+
+Before introducing any actual write-capable `--write` path, all conditions below
+must be satisfied in this order and documented in the change request:
+
+1. **v0.4.x gate completion check**
+   - `v0.4.0` acceptance criteria confirmed.
+   - `v0.4.1` write guard hardening confirmed (`--write` rejected on apply-family commands).
+   - `v0.4.2` preflight validator implemented and passing.
+   - `v0.4.3` preflight failure/success output hardened and deterministic.
+   - `v0.4.4` failure interpretation runbook established and followed.
+
+2. **Preflight mandatory pass**
+   - `npm run review:apply-approved-preflight -- ...` must succeed.
+   - Failure code count must be zero.
+   - If any failure code is emitted, write path is blocked until resolved.
+
+3. **Warnings rule**
+   - `warnings` in preflight input and plan summary must be zero.
+   - warning-related payloads (`type`, `line`, `message`, `raw`) must be reviewed
+    and signed off before any future write attempt.
+
+4. **Allowlist rule**
+   - All candidate paths must satisfy allowlist policy.
+   - Any allowlist-related failure (`ALLOWLIST_*`) blocks write.
+
+5. **Lineage rule**
+   - `inputPath` contract check must pass (or be intentionally and explicitly updated).
+   - `inputHash` and `planHash` checks must pass if required by the caller.
+   - Any hash/input mismatch blocks write.
+
+6. **No partial apply principle**
+   - All-or-nothing semantics must remain the default when moving to write stage:
+     any unresolved failure means the entire batch is rejected.
+
+#### Go/No-go
+
+- **Go**: all above checks pass and are recorded in the approval ticket.
+- **No-go**: any one of the following is present:
+  - preflight failure code
+  - warning count > 0 (before explicit governance approval and resolution)
+  - allowlist mismatch
+  - lineage/path mismatch
+  - checksum mismatch
+
+This checklist is documentation-only for `v0.4.5`; no implementation changes,
+record writes, or actual file writes are introduced in this step.
+
 ### Apply Approved Preview Runbook (Pre-apply checks)
 
 Use this sequence before any `apply-approved-review` write integration work:

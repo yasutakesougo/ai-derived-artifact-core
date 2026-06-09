@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.4.5 - apply-write implementation readiness checklist (docs-only)
+
+### Added
+
+- Added a docs-only readiness checklist for transitioning to write-capable flow:
+  - confirm v0.4.0-v0.4.4 gates completion
+  - require preflight success before write path entry
+  - block write when any preflight failure exists
+  - lock allowlist, lineage, and checksum conditions
+  - enforce no-partial-apply principle for future write integration
+
+### Not Included
+
+- 実装は行わない（`--write` 未実装のまま）。
+- 実ファイル更新 / records 書き込みなし。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.4.4 - apply preflight failure interpretation runbook (docs-only)
 
 ### Added
