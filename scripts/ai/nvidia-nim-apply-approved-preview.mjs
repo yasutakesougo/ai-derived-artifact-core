@@ -38,22 +38,26 @@ function printApplyPreview(payload) {
   console.log(`Approved candidates: ${payload.items.length}`);
   console.log(`Warnings: ${payload.warnings.length}`);
 
-  if (payload.items.length === 0) {
-    console.log('No apply candidates found.');
-    return;
-  }
-
-  for (const item of payload.items) {
-    const labels = item.labels.length > 0 ? item.labels.join(', ') : '(none)';
-    console.log(`- ${item.artifactId}`);
-    console.log(`  path: ${item.path}`);
-    console.log(`  suggestedTitle: ${item.suggestedTitle || '(none)'}`);
-    console.log(`  labels: ${labels}`);
-    console.log(`  reason: ${item.reason || '(none)'}`);
+  if (payload.summary.approved !== payload.items.length) {
+    console.warn(`Warning: summary.approved=${payload.summary.approved} does not match actual approved candidates ${payload.items.length}.`);
   }
 
   if (payload.summary.warnings !== payload.warnings.length) {
     console.warn(`Warning: summary.warnings=${payload.summary.warnings} does not match actual warnings ${payload.warnings.length}.`);
+  }
+
+  console.log('Apply candidates:');
+  if (payload.items.length === 0) {
+    console.log('No apply candidates found.');
+  } else {
+    for (const item of payload.items) {
+      const labels = item.labels.length > 0 ? item.labels.join(', ') : '(none)';
+      console.log(`- ${item.artifactId}`);
+      console.log(`  path: ${item.path}`);
+      console.log(`  suggestedTitle: ${item.suggestedTitle || '(none)'}`);
+      console.log(`  labels: ${labels}`);
+      console.log(`  reason: ${item.reason || '(none)'}`);
+    }
   }
 
   if (payload.warnings.length > 0) {

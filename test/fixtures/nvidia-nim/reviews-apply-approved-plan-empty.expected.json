@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "nvidia-nim-apply-approved-dry-run/1.0",
+  "generatedAt": "2026-06-09T00:00:00.000Z",
+  "inputPath": "fixture-empty.md",
+  "summary": {
+    "total": 3,
+    "approved": 0,
+    "warnings": 1
+  },
+  "items": [],
+  "warnings": [
+    {
+      "type": "failed-row",
+      "line": 3,
+      "message": "No parseable approval candidates",
+      "raw": "line:3 -> skipped"
+    }
+  ]
+}

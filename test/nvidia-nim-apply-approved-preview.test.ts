@@ -74,6 +74,78 @@ describe("NVIDIA NIM review apply approved preview", () => {
     expect(output).toContain("[failed-row] line 7: Unterminated string in JSON at position 15");
   });
 
+  it("reports no candidates and still shows warnings", async () => {
+    const inputPath = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-approved-plan-empty.expected.json");
+    const result = await execFileAsync(
+      "node",
+      ["scripts/ai/nvidia-nim-apply-approved-preview.mjs", inputPath],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+      },
+    );
+
+    const output = `${result.stdout}\n${result.stderr}`;
+    expect(output).toContain("Apply candidates:");
+    expect(output).toContain("No apply candidates found.");
+    expect(output).toContain("Warnings:");
+    expect(output).toContain("[failed-row] line 3: No parseable approval candidates");
+    expect(output).toContain("raw: line:3 -> skipped");
+  });
+
+  it("rejects --write option (preview only)", async () => {
+    const inputPath = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-approved-plan.expected.json");
+    let output = "";
+    let exitCode = 0;
+
+    try {
+      await execFileAsync(
+        "node",
+        ["scripts/ai/nvidia-nim-apply-approved-preview.mjs", "--write", inputPath],
+        { cwd: process.cwd(), encoding: "utf8" },
+      );
+    } catch (error) {
+      output = (error as { stdout?: string; stderr?: string }).stdout ?? "";
+      output += (error as { stdout?: string; stderr?: string }).stderr ?? "";
+      exitCode = (error as { code?: number }).code ?? 1;
+    }
+
+    expect(exitCode).toBe(1);
+    expect(output).toContain("Unknown option: --write");
+    expect(output).toContain("Usage: npm run review:apply-approved-preview -- apply-approved-plan.json");
+  });
+
+  it("warns when approved count metadata does not match rendered items", async () => {
+    const inputPath = join(root, "summary-mismatch.json");
+    await writeFile(
+      inputPath,
+      JSON.stringify({
+        schemaVersion: "nvidia-nim-apply-approved-dry-run/1.0",
+        generatedAt: "2026-06-01T00:00:00.000Z",
+        inputPath: "/tmp/mismatch",
+        summary: { total: 1, approved: 2, warnings: 0 },
+        items: [{
+          artifactId: "artifact-mismatch",
+          path: "fixture-mismatch.md",
+          suggestedTitle: "Mismatch",
+          labels: ["gold"],
+          reason: "count mismatch test",
+        }],
+        warnings: [],
+      }),
+      "utf8",
+    );
+
+    const result = await execFileAsync(
+      "node",
+      ["scripts/ai/nvidia-nim-apply-approved-preview.mjs", inputPath],
+      { cwd: process.cwd(), encoding: "utf8" },
+    );
+
+    const output = `${result.stdout}\n${result.stderr}`;
+    expect(output).toContain("Warning: summary.approved=2 does not match actual approved candidates 1.");
+  });
+
   it("fails for invalid schema payload", async () => {
     const invalidInput = join(root, "invalid-plan.json");
     await writeFile(

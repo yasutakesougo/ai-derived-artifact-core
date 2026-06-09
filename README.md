@@ -520,6 +520,9 @@ Output includes:
 No `--write` mode, no records, and no source-note updates are performed in this
 command.
 
+The command rejects write-oriented options (for example `--write`), so preview
+output is always side-effect free.
+
 ### Apply Approved Plan Validation
 
 Validate a schema-stabilized apply-approved plan JSON before passing to an

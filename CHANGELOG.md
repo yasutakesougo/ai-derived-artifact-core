@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.3.4 - NVIDIA NIM apply-approved preview hardening
+
+### Added
+
+- Hardened `review:apply-approved-preview` output for preview usability:
+  - Added explicit candidate section header.
+  - Preserved warning output even when no approved candidates are present.
+  - Added warning when `summary.approved` does not match rendered item count.
+- Added fixture-backed output hardening cases:
+  - empty approved candidate payload (warnings-only preview),
+  - preview command option guard (`--write` rejected),
+  - summary mismatch warning behavior.
+
+### Not Included
+
+- `--write` mode / real file updates.
+- records / real source-note updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.3.3 - NVIDIA NIM apply-approved preview connection
 
 ### Added
