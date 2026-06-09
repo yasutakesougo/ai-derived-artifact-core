@@ -65,10 +65,23 @@ describe("NVIDIA NIM review apply dry-run", () => {
     const normalized = {
       ...parsed,
       inputPath: "INPUT_PATH_PLACEHOLDER",
+      generatedAt: "GENERATED_AT_PLACEHOLDER",
     };
 
     expect(exitCode).toBe(1);
     expect(output).toContain("Dry-run plan written:");
+    expect(parsed).toMatchObject({
+      schemaVersion: "nvidia-nim-apply-dry-run/1.0",
+      summary: {
+        total: 8,
+        approved: 4,
+        failed: 2,
+      },
+      inputPath: expect.any(String),
+      items: expect.any(Array),
+    });
+    expect(typeof parsed.generatedAt).toBe("string");
+    expect(Date.parse(parsed.generatedAt)).not.toBeNaN();
     expect(parsed.summary.approved).toBe(4);
     expect(parsed.summary.failed).toBe(2);
     expect(parsed.items).toHaveLength(4);

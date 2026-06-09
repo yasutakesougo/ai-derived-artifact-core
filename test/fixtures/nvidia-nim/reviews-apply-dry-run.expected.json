@@ -1,4 +1,6 @@
 {
+  "schemaVersion": "nvidia-nim-apply-dry-run/1.0",
+  "generatedAt": "GENERATED_AT_PLACEHOLDER",
   "inputPath": "INPUT_PATH_PLACEHOLDER",
   "summary": {
     "total": 8,

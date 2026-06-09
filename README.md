@@ -370,6 +370,25 @@ Export a Markdown plan for manual inspection:
 npm run review:apply-dry-run -- --out apply-dry-run.md test/fixtures/nvidia-nim/reviews-apply-bridge.expected.json
 ```
 
+Stable JSON output schema (`--json --out`):
+
+- `schemaVersion`
+- `generatedAt`
+- `inputPath`
+- `summary.total`
+- `summary.approved`
+- `summary.failed`
+- `items[]`:
+  - `artifactId`
+  - `path`
+  - `suggestedTitle`
+  - `labels`
+  - `reason`
+- `failed[]`:
+  - `line`
+  - `error`
+  - `raw` (nullable)
+
 Output keeps:
 
 - `artifactId`

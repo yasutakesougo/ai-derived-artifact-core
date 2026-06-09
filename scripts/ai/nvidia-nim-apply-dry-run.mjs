@@ -4,6 +4,8 @@ import { parseReviewImportJsonl } from './nvidia-nim-review-import.mjs';
 import { buildApplyPlanRecords } from './nvidia-nim-apply-plan.mjs';
 import { resolveCliPath } from './nvidia-nim-paths.mjs';
 
+const APPLY_DRY_RUN_SCHEMA_VERSION = 'nvidia-nim-apply-dry-run/1.0';
+
 function usage() {
   return 'Usage: npm run review:apply-dry-run -- [--json] [--out apply-dry-run.md|.json] apply-bridge.json|reviews.jsonl';
 }
@@ -172,6 +174,21 @@ function stringifySafe(value) {
   }
 }
 
+function buildDryRunPayload(plan) {
+  return {
+    schemaVersion: APPLY_DRY_RUN_SCHEMA_VERSION,
+    generatedAt: new Date().toISOString(),
+    inputPath: plan.inputPath,
+    summary: {
+      total: plan.total,
+      approved: plan.items.length,
+      failed: plan.failures.length,
+    },
+    items: plan.items,
+    failed: plan.failures,
+  };
+}
+
 export function renderApplyDryRunMarkdown(plan) {
   const lines = [
     '# NVIDIA NIM Apply Dry-Run Plan',
@@ -263,16 +280,8 @@ async function main() {
 
   if (parsedArgs.outputPath) {
     if (isJsonOutput) {
-      await fs.writeFile(parsedArgs.outputPath, `${JSON.stringify({
-        inputPath: payload.inputPath,
-        summary: {
-          total: payload.total,
-          approved: payload.items.length,
-          failed: payload.failures.length,
-        },
-        items: payload.items,
-        failed: payload.failures,
-      }, null, 2)}\n`, 'utf8');
+      const jsonPayload = buildDryRunPayload(payload);
+      await fs.writeFile(parsedArgs.outputPath, `${JSON.stringify(jsonPayload, null, 2)}\n`, 'utf8');
     } else {
       const text = renderApplyDryRunMarkdown({
         inputPath: payload.inputPath,

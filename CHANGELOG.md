@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.8 - NVIDIA NIM Review Apply Dry-Run (schema stabilization)
+
+### Changed
+
+- Stabilized `review:apply-dry-run` JSON schema by adding:
+  - `schemaVersion`
+  - `generatedAt`
+  - fixed top-level `summary`, `items`, and `failed` shape
+- Added fixture-based schema comparison for `--json --out` output.
+
+### Not Included
+
+- `--write` mode.
+- apply to real files or records.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.7 - NVIDIA NIM Review Apply Dry-Run (bridge validation)
 
 ### Added
