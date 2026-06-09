@@ -503,6 +503,23 @@ Failed rows are shown as warnings, and summary/plan output is shown on stdout.
 No `--write` mode, no records, and no source-note updates are performed in this
 command.
 
+### Apply Approved Preview
+
+Connect a validated apply-approved plan directly to an apply-preview flow:
+
+```bash
+npm run review:apply-approved-preview -- test/fixtures/nvidia-nim/reviews-apply-approved-plan.expected.json
+```
+
+Output includes:
+
+- apply candidate summary
+- `artifactId`, `path`, `suggestedTitle`, `labels`, `reason` for each valid item
+- warnings list if `warnings[]` is present
+
+No `--write` mode, no records, and no source-note updates are performed in this
+command.
+
 ### Apply Approved Plan Validation
 
 Validate a schema-stabilized apply-approved plan JSON before passing to an

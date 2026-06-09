@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.3.3 - NVIDIA NIM apply-approved preview connection
+
+### Added
+
+- Added `review:apply-approved-preview` CLI to connect validated apply-approved plan
+  payloads to a preview phase before write path integration.
+- Reused `review:apply-approved-validate` parsing to ensure schema compatibility.
+- Added preview summary output and per-item display:
+  - `artifactId`
+  - `path`
+  - `suggestedTitle`
+  - `labels`
+  - `reason`
+- Added warning output when payload `warnings[]` contains entries.
+- Added fixture-based tests for parse, successful preview rendering, warning output,
+  and invalid schema failure.
+
+### Not Included
+
+- `--write` mode.
+- records / real source-note updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.3.2 - NVIDIA NIM apply-approved-plan validation
 
 ### Added

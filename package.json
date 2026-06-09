@@ -19,6 +19,7 @@
     "review:apply-approved-dry-run": "node scripts/ai/nvidia-nim-apply-approved-dry-run.mjs",
     "review:apply-validate": "node scripts/ai/nvidia-nim-apply-validate.mjs",
     "review:apply-approved-validate": "node scripts/ai/nvidia-nim-apply-approved-validate.mjs",
+    "review:apply-approved-preview": "node scripts/ai/nvidia-nim-apply-approved-preview.mjs",
     "review:apply-receive": "node scripts/ai/nvidia-nim-apply-receive.mjs",
     "review:apply-bridge": "node scripts/ai/nvidia-nim-apply-bridge.mjs"
   },
