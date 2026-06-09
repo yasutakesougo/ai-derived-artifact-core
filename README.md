@@ -443,6 +443,29 @@ Output includes:
 No `--write` mode, no records, and no source-note updates are performed in
 this command.
 
+### Apply Approved (Dry Run)
+
+Connect a validated dry-run payload to the `apply-approved-review` plan phase
+without applying any files:
+
+```bash
+npm run review:apply-approved-dry-run -- test/fixtures/nvidia-nim/reviews-apply-dry-run.expected.json
+```
+
+This command prints a dry-run plan containing only approved payload entries with:
+
+- `artifactId`
+- `path`
+- `suggestedTitle`
+- `labels`
+- `reason`
+
+Validation is executed first via `review:apply-validate` rules before plan output.
+Failed rows are shown as warnings, and summary/plan output is shown on stdout.
+
+No `--write` mode, no records, and no source-note updates are performed in this
+command.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

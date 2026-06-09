@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.3.0 - NVIDIA NIM Review Apply Approved Dry-Run Bridge
+
+### Added
+
+- Added `review:apply-approved-dry-run` CLI to connect validated
+  `apply-dry-run` payloads to a preview plan flow suitable for
+  `apply-approved-review` handoff.
+- Reused `review:apply-validate` payload parsing for strict compatibility
+  checks (`schemaVersion`, `summary`, `items`, and `failed`).
+- Added approved-only filtering for plan rendering when decision metadata is
+  present in payload items.
+- Added warning output for failed payload rows and summary/plan mismatch
+  visibility.
+- Added regression tests for:
+  - path argument parsing
+  - plan output from fixture payload
+  - non-approved item filtering
+  - invalid JSON handling
+
+### Not Included
+
+- `--write` mode.
+- Records / real source-note updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.9 - NVIDIA NIM Review Apply Validation
 
 ### Added
