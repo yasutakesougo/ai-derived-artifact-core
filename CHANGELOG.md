@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.6 - NVIDIA NIM Review Apply Bridge (dry-run payload)
+
+### Added
+
+- Added `review:apply-bridge` CLI to generate dry-run bridge payloads from
+  `reviews.jsonl`.
+- Added `--json` mode and `--out` support for fixture-backed payload generation.
+- Added payload shape including `artifactId`, `path`, `suggestedTitle`, `labels`,
+  `reason`, and failure metadata for future `apply-approved-review` bridge wiring.
+- Added fixture-driven tests for JSON and Markdown output snapshots.
+
+### Not Included
+
+- Runtime `apply` / `--write` mode.
+- Direct integration with `apply-approved-review.ts`.
+- records persistence or real source-note updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.5 - NVIDIA NIM Review Apply Plan (fixture validation)
 
 ### Added

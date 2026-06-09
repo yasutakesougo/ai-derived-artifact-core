@@ -315,6 +315,41 @@ No NVIDIA API calls are executed.
 `test/fixtures/nvidia-nim/reviews-apply-plan.jsonl` provides a fixed fixture input
 for this verification path.
 
+### Apply Bridge (Dry Run Payload)
+
+Generate a dry-run payload that can be fed to a future `apply-approved-review` bridge:
+
+```bash
+npm run review:apply-bridge -- --json test/fixtures/nvidia-nim/reviews-apply-plan.jsonl
+```
+
+Export payload for integration workflows:
+
+```bash
+npm run review:apply-bridge -- --json --out apply-approved.json reviews.jsonl
+```
+
+Or export a human-friendly Markdown snapshot:
+
+```bash
+npm run review:apply-bridge -- --out apply-bridge.md reviews.jsonl
+```
+
+Payload fields:
+
+- `artifactId`
+- `path`
+- `suggestedTitle`
+- `labels`
+- `reason`
+- `summary.total`
+- `summary.approved`
+- `summary.failed`
+
+No writes are performed; this is preview only and does not apply any file or
+record updates.
+No NVIDIA API calls are executed.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are
