@@ -503,6 +503,34 @@ Failed rows are shown as warnings, and summary/plan output is shown on stdout.
 No `--write` mode, no records, and no source-note updates are performed in this
 command.
 
+### Apply Approved Plan Validation
+
+Validate a schema-stabilized apply-approved plan JSON before passing to an
+`apply-approved-review` write flow:
+
+```bash
+npm run review:apply-approved-validate -- test/fixtures/nvidia-nim/reviews-apply-approved-plan.expected.json
+```
+
+Validation checks:
+
+- `schemaVersion === nvidia-nim-apply-approved-dry-run/1.0`
+- `generatedAt` / `inputPath`
+- `summary.total / summary.approved / summary.warnings`
+- `items[]` required fields:
+  - `artifactId`
+  - `path`
+  - `suggestedTitle`
+  - `labels`
+  - `reason`
+- `warnings[]` required fields:
+  - `type`
+  - `line`
+  - `message`
+  - `raw` (optional)
+
+On validation failure, it prints the error and exits non-zero.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.3.2 - NVIDIA NIM apply-approved-plan validation
+
+### Added
+
+- Added `review:apply-approved-validate` CLI to validate
+  `review:apply-approved-dry-run --json --out` payloads.
+- Added schema checks for:
+  - `schemaVersion`
+  - `generatedAt`, `inputPath`
+  - `summary.total`, `summary.approved`, `summary.warnings`
+  - `items[]` required fields:
+    - `artifactId`
+    - `path`
+    - `suggestedTitle`
+    - `labels`
+    - `reason`
+  - `warnings[]` required fields:
+    - `type`, `line`, `message` (and optional `raw`)
+- Added regression tests for valid plan schema and common invalid cases.
+
+### Not Included
+
+- `--write` mode.
+- records / real source-note updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.3.1 - NVIDIA NIM apply-approved-dry-run plan schema
 
 ### Added
