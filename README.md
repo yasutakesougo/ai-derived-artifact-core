@@ -578,6 +578,79 @@ Summary:
 
 `--write` remains unsupported in this phase and is rejected.
 
+### Apply Approved Preflight Failure Interpretation Runbook
+
+Use this runbook whenever `review:apply-approved-preflight` fails. The command is
+pre-write gating only; no files are changed.
+
+Failure code meaning and action:
+
+- `[SUMMARY_MISMATCH]` / `[SUMMARY_WARNING_MISMATCH]`:
+  - Meaning: metadata and rendered candidates/warnings disagree.
+  - Confirm: regenerate plan from the same source and verify `summary.approved`,
+    `summary.warnings` logic.
+  - Action: fix the upstream plan generation logic, then rerun preflight.
+  - Do not proceed to write-gate acceptance.
+
+- `[WARNINGS_BLOCKED]`:
+  - Meaning: there are pending warnings and write-gate is intentionally blocked.
+  - Confirm: inspect each warning entry (`type`, `line`, `message`, and `raw` if
+    present) in the plan JSON.
+  - Required step: a human reviewer must clear or explicitly authorize skipping.
+  - Do not proceed until warnings are cleared to zero.
+
+- `[ALLOWLIST_INVALID_PATH]`:
+  - Meaning: item path is missing/empty.
+  - Confirm: remove or repair invalid items from upstream payload.
+  - Do not proceed.
+
+- `[ALLOWLIST_TRAVERSAL]`:
+  - Meaning: path traversal token (`..`) detected.
+  - Confirm: path normalization must remove traversal risk.
+  - Do not proceed.
+
+- `[ALLOWLIST_VIOLATION]`:
+  - Meaning: resolved path is outside allowed roots.
+  - Confirm: set correct `--allowlist` root or adjust payload paths.
+  - Do not proceed until every candidate is under allowlist.
+
+- `[LINEAGE_INPUT_PATH_MISMATCH]`:
+  - Meaning: expected input path does not match plan `inputPath`.
+  - Confirm: pass the exact intended `--expected-input-path` argument.
+  - Do not proceed until path contract is fixed.
+
+- `[LINEAGE_INPUT_READ_FAIL]`:
+  - Meaning: input file could not be read for hash check.
+  - Confirm: verify input path and file existence/permissions.
+  - Do not proceed.
+
+- `[LINEAGE_INPUT_HASH_MISMATCH]`:
+  - Meaning: content hash of input differs from expected.
+  - Confirm: either update expected hash to match canonical source or regenerate
+    plan from the verified source file.
+  - Do not proceed if input content cannot be authorized.
+
+- `[LINEAGE_PLAN_HASH_MISMATCH]`:
+  - Meaning: plan JSON content does not match expected hash.
+  - Confirm: compare plan source (`--expected-plan-hash`) with the payload used in review.
+  - Do not proceed unless the hash mismatch is explicitly approved in the runbook
+    and recomputed plan is intentionally re-baselined.
+
+Re-run policy:
+
+- Re-run is allowed after fixing the underlying root cause (path, payload,
+  or source input mismatch).
+- Full stop and human review is required when any hash mismatch appears.
+- Any failure with warnings or any allowlist mismatch requires explicit human
+  acknowledgement before re-running with a stronger allowlist contract.
+
+Warnings approval flow before `--write` (future stage):
+
+1. Collect warning items from payload `warnings[]`.
+2. Human reviewer confirms each item is acceptable, and records decision context.
+3. Re-run preflight with the same allowlist and lineage parameters.
+4. Proceed only when warnings are zero and all failures are resolved.
+
 ### Apply Approved Preview Runbook (Pre-apply checks)
 
 Use this sequence before any `apply-approved-review` write integration work:

@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.4.4 - apply preflight failure interpretation runbook (docs-only)
+
+### Added
+
+- Added a docs-only runbook for `review:apply-approved-preflight` failure handling:
+  - per failure code meaning and required follow-up checks
+  - re-run conditions and stop conditions
+  - warnings approval flow before future write-gate integration
+  - allowlist and lineage/hash mismatch handling guidance
+
+### Not Included
+
+- 実装は行わない（`--write` 未実装のまま）。
+- 実ファイル更新 / records 書き込みなし。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.4.3 - NVIDIA NIM apply-approved preflight failure/output hardening (no-write)
 
 ### Added
