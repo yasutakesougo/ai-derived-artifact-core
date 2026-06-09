@@ -13,7 +13,8 @@
     "review:nvidia:batch": "node scripts/ai/nvidia-nim-review-batch.mjs",
     "review:import": "node scripts/ai/nvidia-nim-review-import.mjs",
     "review:aggregate": "node scripts/ai/nvidia-nim-aggregate.mjs",
-    "review:report": "node scripts/ai/nvidia-nim-report.mjs"
+    "review:report": "node scripts/ai/nvidia-nim-report.mjs",
+    "review:apply-plan": "node scripts/ai/nvidia-nim-apply-plan.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

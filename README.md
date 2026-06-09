@@ -288,6 +288,31 @@ The generated report includes:
 
 No NVIDIA API calls are executed.
 
+### Apply Plan (Dry Run)
+
+Generate a dry-run plan of only `approve` items for human confirmation:
+
+```bash
+npm run review:apply-plan -- reviews.jsonl
+```
+
+Optionally export the plan as Markdown:
+
+```bash
+npm run review:apply-plan -- --out apply-plan.md reviews.jsonl
+```
+
+Output includes:
+
+- `artifactId`
+- `path`
+- `suggestedTitle`
+- `labels`
+- `reason`
+
+No writes are performed; this is preview only and does not apply any file or record updates.
+No NVIDIA API calls are executed.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

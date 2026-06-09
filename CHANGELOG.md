@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.4 - NVIDIA NIM Review Apply Plan (minimal)
+
+### Added
+
+- Added `review:apply-plan` CLI as a dry-run plan generator for approved review results.
+- Added `--out` option to output the approved-only plan as Markdown.
+- Added extraction of `artifactId`, `path`, `suggestedTitle`, `labels`, and `reason` from `reviews.jsonl` for each approved record.
+- Added parsing and rendering helper coverage for argument handling and markdown output.
+
+### Not Included
+
+- `--write` mode.
+- Records persistence integration.
+- Human review UI integration.
+- Real NVIDIA NIM API calls.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.3 - NVIDIA NIM Review Report (minimal)
 
 ### Added
