@@ -350,6 +350,38 @@ No writes are performed; this is preview only and does not apply any file or
 record updates.
 No NVIDIA API calls are executed.
 
+### Apply Dry-Run (Bridge Preview)
+
+Validate which approved items would be targeted before wiring to `apply-approved-review`:
+
+```bash
+npm run review:apply-dry-run -- test/fixtures/nvidia-nim/reviews-apply-bridge.expected.json
+```
+
+Export preview as JSON for downstream tooling:
+
+```bash
+npm run review:apply-dry-run -- --json --out apply-dry-run.json reviews.jsonl
+```
+
+Export a Markdown plan for manual inspection:
+
+```bash
+npm run review:apply-dry-run -- --out apply-dry-run.md test/fixtures/nvidia-nim/reviews-apply-bridge.expected.json
+```
+
+Output keeps:
+
+- `artifactId`
+- `path`
+- `suggestedTitle`
+- `labels`
+- `reason`
+
+Only approved items are included in the apply payload preview.
+No records or source files are modified (dry-run only).
+No NVIDIA API calls are executed.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

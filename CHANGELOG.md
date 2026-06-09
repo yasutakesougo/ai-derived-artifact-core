@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.7 - NVIDIA NIM Review Apply Dry-Run (bridge validation)
+
+### Added
+
+- Added `review:apply-dry-run` CLI to connect bridge payloads to
+  `apply-approved-review`-style plan preview.
+- Added support for both `apply-bridge` payload JSON and `reviews.jsonl` inputs.
+- Added fixture-based dry-run coverage for approved-only extraction and missing-value
+  stability.
+- Added `--json` and `--out` outputs for downstream automation and human review.
+
+### Not Included
+
+- `--write` mode.
+- `apply-approved-review.ts` direct invocation.
+- Records persistence or real source-note updates.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.6 - NVIDIA NIM Review Apply Bridge (dry-run payload)
 
 ### Added

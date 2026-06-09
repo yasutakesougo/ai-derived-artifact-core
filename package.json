@@ -15,6 +15,7 @@
     "review:aggregate": "node scripts/ai/nvidia-nim-aggregate.mjs",
     "review:report": "node scripts/ai/nvidia-nim-report.mjs",
     "review:apply-plan": "node scripts/ai/nvidia-nim-apply-plan.mjs",
+    "review:apply-dry-run": "node scripts/ai/nvidia-nim-apply-dry-run.mjs",
     "review:apply-bridge": "node scripts/ai/nvidia-nim-apply-bridge.mjs"
   },
   "devDependencies": {
