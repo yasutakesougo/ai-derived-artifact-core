@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveCliPath } from './nvidia-nim-paths.mjs';
+import { fileURLToPath } from 'node:url';
 
 const VALID_DECISIONS = ['approve', 'needs_review', 'reject'];
 
@@ -203,7 +204,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error('Unexpected error:', error);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error('Unexpected error:', error);
+    process.exit(1);
+  });
+}

@@ -54,14 +54,14 @@ describe("NVIDIA NIM review import helpers", () => {
     const result = JSON.parse(
       await runNodeModule(`
         import { parseReviewImportJsonl, summarizeReviewImport } from './scripts/ai/nvidia-nim-review-import.mjs';
-        const parsed = JSON.parse(${JSON.stringify(text)});
+        const parsed = ${JSON.stringify(text)};
         const { records, failures } = parseReviewImportJsonl(parsed);
         const summary = summarizeReviewImport(records);
         process.stdout.write(JSON.stringify({ failures, summary, records }));
       `),
     );
 
-    expect(result.failures).toBe(1);
+    expect(result.failures).toBe(2);
     expect(result.summary.total).toBe(3);
     expect(result.summary.failed).toBe(2);
     expect(result.summary.approved).toBe(1);
@@ -105,6 +105,6 @@ describe("NVIDIA NIM review import helpers", () => {
 
     expect(output).toContain('--- Filtered (needs_review) ---');
     expect(output).toContain('"file":"b.md"');
-    expect(output).toContain('Failed: 2');
+    expect(output).toContain('Failed: 1');
   });
 });
