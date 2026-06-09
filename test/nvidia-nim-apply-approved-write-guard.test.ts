@@ -54,28 +54,34 @@ describe("NVIDIA NIM review apply-approved write guard", () => {
     expect(output).toContain("Usage: npm run review:apply-approved-validate -- apply-approved-plan.json");
   });
 
-  it("preview command remains preview-only unless --write is explicit", async () => {
+  it("preview command now accepts --write for synthetic write output", async () => {
     const inputPath = fixturePath("reviews-apply-approved-plan.expected.json");
     let output = "";
     let exitCode = 0;
 
     try {
-      const result = await execFileAsync(
+      await execFileAsync(
         "node",
-        ["scripts/ai/nvidia-nim-apply-approved-preview.mjs", inputPath],
+        [
+          "scripts/ai/nvidia-nim-apply-approved-preview.mjs",
+          "--write",
+          "--allowlist",
+          process.cwd(),
+          "--out",
+          "preview-write.json",
+          inputPath,
+        ],
         { cwd: process.cwd(), encoding: "utf8" },
       );
-      output = `${result.stdout}${result.stderr}`;
     } catch (error) {
       output = (error as { stdout?: string; stderr?: string }).stdout ?? "";
       output += (error as { stdout?: string; stderr?: string }).stderr ?? "";
       exitCode = (error as { code?: number }).code ?? 1;
     }
 
-    expect(exitCode).toBe(0);
-    expect(output).toContain("Apply-approved preview:");
-    expect(output).toContain("Total: 8");
-    expect(output).toContain("- artifact-a");
+    expect(exitCode).toBe(1);
+    expect(output).toContain("Write preflight failed:");
+    expect(output).not.toContain("Unknown option: --write");
   });
 
   it("rejects --write in apply-approved-preflight command", async () => {

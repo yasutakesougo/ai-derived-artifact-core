@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.5.1 - write output schema fixed for apply-approved preview
+
+### Added
+
+- Fixed `review:apply-approved-preview --write --out` output as JSON with a stable
+  schema:
+  - `schemaVersion`
+  - `generatedAt`
+  - `inputPath`
+  - `outputPath`
+  - `summary`
+  - `items[]`
+  - `warnings[]`
+  - `preflight` result
+- `preflight` result is now serialized into write output, including failure list on
+  blocked writes.
+- Added fixture-driven output snapshot test for write-mode preview output.
+
+### Not Included
+
+- 実データ更新/records 書き込みは含めていない。`--write` は合成/fixture 用の
+  プレビュー書き出しのみ。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.5.0 - write-gated apply-approved preview (synthetic-only)
 
 ### Added

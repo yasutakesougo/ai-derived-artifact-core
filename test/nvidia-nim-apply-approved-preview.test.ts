@@ -84,7 +84,8 @@ describe("NVIDIA NIM review apply approved preview", () => {
   it("writes preview write-plan when preflight passes", async () => {
     const sourcePath = join(root, "source-input.txt");
     const payloadPath = join(root, "payload.json");
-    const outputPath = join(root, "apply-approved-preview.md");
+    const outputPath = join(root, "apply-approved-preview.json");
+    const expectedPath = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-approved-preview.expected.json");
 
     await writeFile(sourcePath, "synthetic source text", "utf8");
 
@@ -136,11 +137,15 @@ describe("NVIDIA NIM review apply approved preview", () => {
     );
 
     expect(result.stdout).toContain("Apply-approved preview plan written:");
-    const output = await readFile(outputPath, "utf8");
-    expect(output).toContain("Apply-approved preview:");
-    expect(output).toContain("- artifact-a");
-    expect(output).toContain("path: fixture-a.md");
-    expect(output).toContain("- artifact-b");
+    const expected = JSON.parse(await readFile(expectedPath, "utf8"));
+    const output = JSON.parse(await readFile(outputPath, "utf8"));
+    const normalized = {
+      ...output,
+      generatedAt: "GENERATED_AT_PLACEHOLDER",
+      inputPath: "INPUT_PATH_PLACEHOLDER",
+      outputPath: "OUTPUT_PATH_PLACEHOLDER",
+    };
+    expect(normalized).toEqual(expected);
   });
 
   it("reports no candidates and still shows warnings", async () => {
@@ -181,7 +186,7 @@ describe("NVIDIA NIM review apply approved preview", () => {
 
     expect(exitCode).toBe(1);
     expect(output).toContain("Missing required --allowlist for --write");
-    expect(output).toContain("Usage: npm run review:apply-approved-preview -- [--write] [--out apply-approved-preview.md] [--allowlist PATH] [--expected-plan-hash HASH] [--expected-input-path PATH] [--expected-input-hash HASH] apply-approved-plan.json");
+    expect(output).toContain("Usage: npm run review:apply-approved-preview -- [--write] [--out apply-approved-preview.json] [--allowlist PATH] [--expected-plan-hash HASH] [--expected-input-path PATH] [--expected-input-hash HASH] apply-approved-plan.json");
   });
 
   it("blocks write path when preflight fails", async () => {

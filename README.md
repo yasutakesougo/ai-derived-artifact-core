@@ -525,7 +525,7 @@ execution before write-gate).
 In `v0.5.0`, `--write` is introduced as a gated synthetic preview export:
 
 ```bash
-npm run review:apply-approved-preview -- --write --out apply-preview.md \
+npm run review:apply-approved-preview -- --write --out apply-preview.json \
   --allowlist /path/to/synthetic-root \
   --expected-input-path /path/to/source.txt \
   --expected-input-hash <sha256> \
@@ -544,6 +544,17 @@ For `--write`, all checks must pass before the write output is produced:
   - `--expected-input-path`
   - `--expected-input-hash`
   - `--expected-plan-hash`
+
+`--write` output is fixed JSON (schema version `nvidia-nim-apply-approved-preview/1.0`) with:
+
+- `schemaVersion`
+- `generatedAt`
+- `inputPath`
+- `outputPath`
+- `summary`
+- `items[]`
+- `warnings[]`
+- `preflight` result
 
 Failure behavior:
 
@@ -756,20 +767,31 @@ npm run review:apply-approved-preview -- test/fixtures/nvidia-nim/reviews-apply-
 - If not matching, warning is shown and must be resolved before moving forward.
 - If present, `summary.warnings` and warning count line up.
 
-4. Confirm no write path is available:
+4. Confirm `--write` emits schema-stable JSON output:
 
 ```bash
-npm run review:apply-approved-preview -- --write test/fixtures/nvidia-nim/reviews-apply-approved-plan.expected.json
+npm run review:apply-approved-preview -- \
+  --write \
+  --out preview-output.json \
+  --allowlist /path/to/synthetic-root \
+  /path/to/reviews-apply-approved-plan.expected.json
 ```
 
-Expected:
+Expected JSON keys include:
 
-`Unknown option: --write` and usage output.
+- `schemaVersion`
+- `generatedAt`
+- `inputPath`
+- `outputPath`
+- `summary`
+- `items[]`
+- `warnings[]`
+- `preflight`
 
 5. Confirm side effects:
 
-- No changes to source notes or `records` should occur in preview mode.
-- `--write` is intentionally unsupported in this stage.
+- No changes to source notes or `records` should occur in write-gated preview mode.
+- `--write` is synthetic-only and must stay fixture/synthetic-oriented.
 
 6. Capture output snapshot for manual review in release notes or ticket:
 
@@ -799,10 +821,10 @@ write-path implementation.
 
 - `summary.approved` must equal the rendered candidate count.
 - Every warning in preview output must be reviewed by a human reviewer before write.
-- `records` writes and source-note writes are still disallowed until `--write` is intentionally introduced in a later version.
-- `--write` is not supported in this stage and must continue to return:
-
-`Unknown option: --write`.
+- `--write` is intentionally synthetic-only in this stage:
+  - no source-note updates
+  - no records writes
+  - fixture/synthetic payloads only
 
 #### Safety envelope
 
@@ -847,10 +869,13 @@ Write-gated execution must verify lineage between preview and write:
 
 ### Write Guard Rules (v0.4.1 docs-only)
 
-- `--write` remains unsupported until a dedicated change set enables it.
-- Every apply-approved command (`validate` / `preview` / `approved-dry-run`) must
-  return `Unknown option: --write` when passed `--write`.
-- These rejections are now test-fixed and part of the acceptance gate.
+- In v0.4.x, `--write` remained unsupported until a dedicated change set enables it.
+- In v0.4.x, commands were write-rejected by design. In `v0.5.1`,
+  `review:apply-approved-preview` accepts `--write` to emit schema-stabilized
+  fixture/synthetic preview output.
+- For `v0.5.1`, this acceptance gate currently applies to
+  `review:apply-approved-dry-run`, `review:apply-approved-validate`, and
+  `review:apply-approved-preflight` command paths.
 
 ### Apply Approved Plan Validation
 

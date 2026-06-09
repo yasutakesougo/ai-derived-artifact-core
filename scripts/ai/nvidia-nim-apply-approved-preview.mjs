@@ -4,8 +4,10 @@ import { resolveCliPath } from './nvidia-nim-paths.mjs';
 import { loadApplyApprovedValidateInput } from './nvidia-nim-apply-approved-validate.mjs';
 import { collectApplyApprovedPreflightFailures } from './nvidia-nim-apply-approved-preflight.mjs';
 
+export const APPLY_APPROVED_PREVIEW_SCHEMA_VERSION = 'nvidia-nim-apply-approved-preview/1.0';
+
 function usage() {
-  return 'Usage: npm run review:apply-approved-preview -- [--write] [--out apply-approved-preview.md] [--allowlist PATH] [--expected-plan-hash HASH] [--expected-input-path PATH] [--expected-input-hash HASH] apply-approved-plan.json';
+  return 'Usage: npm run review:apply-approved-preview -- [--write] [--out apply-approved-preview.json] [--allowlist PATH] [--expected-plan-hash HASH] [--expected-input-path PATH] [--expected-input-hash HASH] apply-approved-plan.json';
 }
 
 export function parseApplyApprovedPreviewArgs(args, cwd = process.cwd()) {
@@ -154,9 +156,30 @@ function renderApplyApprovedPreview(payload) {
   return `${lines.join('\n')}\n`;
 }
 
-async function writePreviewPlan(payload, outputPath) {
-  await fs.writeFile(outputPath, renderApplyApprovedPreview(payload), 'utf8');
-  console.log(`Apply-approved preview plan written: ${outputPath}`);
+function buildPreviewWritePayload(payload, preflightFailures, outputPath) {
+  return {
+    schemaVersion: APPLY_APPROVED_PREVIEW_SCHEMA_VERSION,
+    generatedAt: new Date().toISOString(),
+    inputPath: payload.inputPath,
+    outputPath,
+    summary: {
+      total: payload.summary.total,
+      approved: payload.items.length,
+      warnings: payload.warnings.length,
+    },
+    items: payload.items.map((item) => ({
+      artifactId: item.artifactId,
+      path: item.path,
+      suggestedTitle: item.suggestedTitle,
+      labels: item.labels,
+      reason: item.reason,
+    })),
+    warnings: payload.warnings,
+    preflight: {
+      passed: preflightFailures.length === 0,
+      failures: preflightFailures,
+    },
+  };
 }
 
 function printApplyPreview(payload) {
@@ -204,7 +227,12 @@ async function main() {
       process.exit(1);
     }
 
-    await writePreviewPlan(payload, parsedArgs.outputPath);
+    const outputPath = parsedArgs.outputPath;
+
+    const writePayload = buildPreviewWritePayload(payload, failures, outputPath);
+    await fs.writeFile(outputPath, `${JSON.stringify(writePayload, null, 2)}\n`, 'utf8');
+
+    console.log(`Apply-approved preview plan written: ${outputPath}`);
     return;
   }
 

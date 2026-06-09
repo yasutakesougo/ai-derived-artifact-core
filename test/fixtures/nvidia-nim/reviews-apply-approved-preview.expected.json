@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "nvidia-nim-apply-approved-preview/1.0",
+  "generatedAt": "GENERATED_AT_PLACEHOLDER",
+  "inputPath": "INPUT_PATH_PLACEHOLDER",
+  "outputPath": "OUTPUT_PATH_PLACEHOLDER",
+  "summary": {
+    "total": 2,
+    "approved": 2,
+    "warnings": 0
+  },
+  "items": [
+    {
+      "artifactId": "artifact-a",
+      "path": "fixture-a.md",
+      "suggestedTitle": "Alpha",
+      "labels": [
+        "gold"
+      ],
+      "reason": "No warning synthetic"
+    },
+    {
+      "artifactId": "artifact-b",
+      "path": "fixture-b.md",
+      "suggestedTitle": "Beta",
+      "labels": [
+        "safe"
+      ],
+      "reason": "No warning synthetic B"
+    }
+  ],
+  "warnings": [],
+  "preflight": {
+    "passed": true,
+    "failures": []
+  }
+}
