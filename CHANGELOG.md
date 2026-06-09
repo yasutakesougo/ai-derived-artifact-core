@@ -1,5 +1,37 @@
 # Changelog
 
+## v0.5.2 - apply-approved write output validator
+
+### Added
+
+- Added `review:apply-approved-write-validate` to validate write-output JSON from
+  `review:apply-approved-preview --write`.
+- Added schema checks for:
+  - `schemaVersion === nvidia-nim-apply-approved-preview/1.0`
+  - `generatedAt`, `inputPath`, `outputPath`
+  - `summary`
+  - `items[]`
+  - `warnings[]`
+  - `preflight`
+- Added fixture-backed validation coverage for:
+  - valid write output payload
+  - invalid schema version
+  - missing `preflight`
+  - invalid JSON input
+- Added regression coverage that `review:apply-approved-write-validate` accepts
+  synthetic preview output as valid payload.
+
+### Not Included
+
+- 実データ更新 / records 書き込みは含めていない。`review:apply-approved-write-validate` は
+  write-output の検証専用。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.5.1 - write output schema fixed for apply-approved preview
 
 ### Added

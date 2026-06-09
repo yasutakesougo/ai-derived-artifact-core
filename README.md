@@ -564,6 +564,39 @@ Failure behavior:
 Current behavior remains fixture/synthetic-oriented and does not apply to source
 files or `records`; it is a structured write path only.
 
+### Apply Approved Preview Write Validate
+
+Validate a `review:apply-approved-preview --write` output file before passing it
+to a future `apply-approved-review` write-capable flow:
+
+```bash
+npm run review:apply-approved-write-validate -- apply-approved-preview-output.json
+```
+
+Validation checks:
+
+- `schemaVersion === nvidia-nim-apply-approved-preview/1.0`
+- `generatedAt` string
+- `inputPath` / `outputPath` existence
+- `summary` object:
+  - `total` / `approved` / `warnings`
+- `items[]` required fields:
+  - `artifactId`
+  - `path`
+  - `suggestedTitle`
+  - `labels`
+  - `reason`
+- `warnings[]` required fields:
+  - `type`
+  - `line`
+  - `message`
+  - `raw` (optional)
+- `preflight` result:
+  - `passed` boolean
+  - `failures[]`
+
+On validation failure, it prints the error and exits non-zero.
+
 ### Apply Approved Write Preflight (Gated)
 
 Before passing a validated plan into any future write flow, run a dedicated

@@ -84,6 +84,22 @@ describe("NVIDIA NIM review apply-approved write guard", () => {
     expect(output).not.toContain("Unknown option: --write");
   });
 
+  it("validates write output via apply-approved-write-validate", async () => {
+    const inputPath = fixturePath("reviews-apply-approved-preview.expected.json");
+    const result = await execFileAsync(
+      "node",
+      ["scripts/ai/nvidia-nim-apply-approved-write-validate.mjs", inputPath],
+      { cwd: process.cwd(), encoding: "utf8" },
+    );
+
+    const output = result.stdout;
+    expect(output).toContain("Validation passed: NVIDIA NIM apply-approved preview write payload is valid for write connector.");
+    expect(output).toContain("schemaVersion: nvidia-nim-apply-approved-preview/1.0");
+    expect(output).toContain("preflight.passed: true");
+    expect(output).toContain("items: 2");
+    expect(output).toContain("warnings: 0");
+  });
+
   it("rejects --write in apply-approved-preflight command", async () => {
     const inputPath = fixturePath("reviews-apply-approved-plan.expected.json");
     let output = "";
