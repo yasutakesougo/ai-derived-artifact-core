@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.2.0 - NVIDIA NIM Batch Review JSONL Export
+
+### Added
+
+- Added `--out` support to `review:nvidia:batch` for writing batch review
+  results as JSONL.
+- JSONL export writes one JSON object per line and includes both successful
+  reviews and failed file results.
+- Added regression coverage for `--out` argument parsing, JSONL formatting, and
+  failed-result export without calling the NVIDIA NIM API.
+- README usage notes for JSONL export.
+
+### Not Included
+
+- Markdown report export.
+- Decision filter CLI.
+- `apply-approved-review.ts` integration.
+- Production `records/` integration or real data ingestion.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.1.1 - NVIDIA NIM Review Workflow Operations Fixes
 
 ### Fixed

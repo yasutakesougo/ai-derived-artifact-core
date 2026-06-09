@@ -1,6 +1,10 @@
 import 'dotenv/config';
 import fs from 'node:fs/promises';
 import OpenAI from 'openai';
+import {
+  formatBatchReviewJsonl,
+  parseBatchReviewArgs,
+} from './nvidia-nim-batch-jsonl.mjs';
 import { resolveReviewFilePath } from './nvidia-nim-paths.mjs';
 
 // 環境変数の読み込み
@@ -130,9 +134,18 @@ ${reviewContent}
 }
 
 async function main() {
-  const files = process.argv.slice(2);
+  let parsedArgs;
+  try {
+    parsedArgs = parseBatchReviewArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error.message);
+    console.error('Usage: npm run review:nvidia:batch -- [--out reviews.jsonl] file1.md file2.md ...');
+    process.exit(1);
+  }
+
+  const { files, outPath } = parsedArgs;
   if (files.length === 0) {
-    console.error('Usage: npm run review:nvidia:batch -- file1.md file2.md ...');
+    console.error('Usage: npm run review:nvidia:batch -- [--out reviews.jsonl] file1.md file2.md ...');
     process.exit(1);
   }
 
@@ -175,6 +188,11 @@ async function main() {
 
   console.log('\n--- Detailed Results ---\n');
   console.log(JSON.stringify(results, null, 2));
+
+  if (outPath) {
+    await fs.writeFile(outPath, formatBatchReviewJsonl(results), 'utf8');
+    console.log(`\nJSONL written: ${outPath}`);
+  }
 
   // エラーがあったら終了コード1で終了
   if (failed > 0) {

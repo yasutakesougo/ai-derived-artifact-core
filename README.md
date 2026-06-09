@@ -223,10 +223,20 @@ npm run review:nvidia:batch -- file1.md file2.md file3.md
 Relative paths are resolved from the current working directory. Absolute paths
 are also supported.
 
+Save batch results as JSONL for downstream aggregation or filtering:
+
+```bash
+npm run review:nvidia:batch -- --out reviews.jsonl test/fixtures/nvidia-nim/*.md
+```
+
+Each JSONL line is one review result. Both successful reviews and failed file
+reviews are written so follow-up tooling can account for every input.
+
 Output includes:
 - Per-file decisions with confidence levels
 - Summary statistics (total/approved/needs_review/rejected/failed)
 - Detailed JSON results for downstream processing
+- Optional JSONL export via `--out`
 
 ### Validation
 
