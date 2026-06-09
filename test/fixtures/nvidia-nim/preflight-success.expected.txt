@@ -1,0 +1,8 @@
+Write preflight passed: apply-approved plan is write-ready.
+Summary:
+  inputPath: {INPUT_PATH}
+  approvedCandidates: 2
+  warnings: 0
+  summaryApproved: 2
+  summaryWarnings: 0
+  planHash: {PLAN_HASH}

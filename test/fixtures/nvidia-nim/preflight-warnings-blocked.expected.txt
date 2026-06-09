@@ -1,0 +1,2 @@
+Write preflight failed:
+[WARNINGS_BLOCKED] warnings=1 must be 0 before preflight write-gate passes

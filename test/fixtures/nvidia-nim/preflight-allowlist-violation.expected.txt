@@ -1,0 +1,2 @@
+Write preflight failed:
+[ALLOWLIST_VIOLATION] item[0] path="{PATH}" is outside allowlist roots

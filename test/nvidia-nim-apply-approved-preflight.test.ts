@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -29,6 +29,37 @@ function hashText(text: string): string {
   return createHash('sha256').update(text).digest('hex');
 }
 
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item)).join(',')}]`;
+  }
+
+  if (value === null) {
+    return 'null';
+  }
+
+  if (typeof value === 'object') {
+    return `{${Object.keys(value as Record<string, unknown>)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`)
+      .join(',')}}`;
+  }
+
+  return JSON.stringify(value);
+}
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+function fixturePath(name: string) {
+  return resolve(import.meta.dirname, 'fixtures', 'nvidia-nim', name);
+}
+
+async function loadFixture(name: string) {
+  return (await readFile(fixturePath(name), 'utf8')).trim();
+}
+
 async function runPreflight(inputPath: string, args: string[]): Promise<{ code: number; output: string }> {
   let output = '';
   let code = 0;
@@ -47,6 +78,7 @@ async function runPreflight(inputPath: string, args: string[]): Promise<{ code: 
     return { code, output };
   }
 }
+
 
 describe('NVIDIA NIM review apply approved preflight', () => {
   it('parses arguments', async () => {
@@ -105,8 +137,10 @@ describe('NVIDIA NIM review apply approved preflight', () => {
     const { code, output } = await runPreflight(payloadPath, []);
 
     expect(code).toBe(0);
-    expect(output).toContain('Write preflight passed: apply-approved plan is write-ready candidate.');
-    expect(output).toContain('Approved candidates: 2');
+    const expected = (await loadFixture('preflight-success.expected.txt'))
+      .replace('{INPUT_PATH}', payload.inputPath)
+      .replace('{PLAN_HASH}', sha256(stableStringify(payload)));
+    expect(output.trim()).toBe(expected);
   });
 
   it('fails when summary.approved does not match rendered items', async () => {
@@ -144,8 +178,9 @@ describe('NVIDIA NIM review apply approved preflight', () => {
     await writeFile(payloadPath, JSON.stringify(payload), 'utf8');
 
     const { code, output } = await runPreflight(payloadPath, []);
+    const expected = await loadFixture('preflight-summary-mismatch.expected.txt');
     expect(code).toBe(1);
-    expect(output).toContain('Summary mismatch');
+    expect(output.trim()).toBe(expected);
   });
 
   it('fails when warnings exist', async () => {
@@ -183,8 +218,9 @@ describe('NVIDIA NIM review apply approved preflight', () => {
 
     const { code, output } = await runPreflight(payloadPath, []);
 
+    const expected = await loadFixture('preflight-warnings-blocked.expected.txt');
     expect(code).toBe(1);
-    expect(output).toContain('Preflight blocked because warning count is 1');
+    expect(output.trim()).toBe(expected);
   });
 
   it('fails when item path is outside allowlist', async () => {
@@ -202,7 +238,7 @@ describe('NVIDIA NIM review apply approved preflight', () => {
       items: [
         {
           artifactId: 'a',
-          path: '../outside.md',
+          path: '/tmp/outside.md',
           suggestedTitle: 'A',
           labels: ['gold'],
           reason: 'ok',
@@ -215,8 +251,9 @@ describe('NVIDIA NIM review apply approved preflight', () => {
     await writeFile(payloadPath, JSON.stringify(payload), 'utf8');
 
     const { code, output } = await runPreflight(payloadPath, []);
+    const expected = (await loadFixture('preflight-allowlist-violation.expected.txt')).replace('{PATH}', '/tmp/outside.md');
     expect(code).toBe(1);
-    expect(output).toContain('contains directory traversal segment');
+    expect(output.trim()).toBe(expected);
   });
 
   it('fails on input hash mismatch when lineage contract is requested', async () => {
@@ -252,8 +289,11 @@ describe('NVIDIA NIM review apply approved preflight', () => {
       '--expected-input-hash', `${hashText(sourceText)}-bad`,
     ]);
 
+    const expected = (await loadFixture('preflight-input-hash-mismatch.expected.txt'))
+      .replace('{EXPECTED}', `${hashText(sourceText)}-bad`)
+      .replace('{ACTUAL}', hashText(sourceText));
     expect(code).toBe(1);
-    expect(output).toContain('Input checksum mismatch');
+    expect(output.trim()).toBe(expected);
   });
 
   it('fails on plan checksum mismatch', async () => {
@@ -283,8 +323,45 @@ describe('NVIDIA NIM review apply approved preflight', () => {
     await writeFile(inputPath, 'source', 'utf8');
     await writeFile(payloadPath, JSON.stringify(payload), 'utf8');
 
+    const expected = (await loadFixture('preflight-plan-hash-mismatch.expected.txt')).replace(
+      '{PLAN_HASH}',
+      sha256(stableStringify(payload)),
+    );
     const { code, output } = await runPreflight(payloadPath, ['--expected-plan-hash', '000000']);
     expect(code).toBe(1);
-    expect(output).toContain('Plan checksum mismatch');
+    expect(output.trim()).toBe(expected);
+  });
+
+  it('fails when allowlist traversal path is rejected with dedicated code', async () => {
+    const inputPath = join(root, 'input-source.txt');
+    const payloadPath = join(root, 'path-traversal-plan.json');
+    const payload = {
+      schemaVersion: 'nvidia-nim-apply-approved-dry-run/1.0',
+      generatedAt: '2026-06-09T00:00:00.000Z',
+      inputPath: 'input-source.txt',
+      summary: {
+        total: 1,
+        approved: 1,
+        warnings: 0,
+      },
+      items: [
+        {
+          artifactId: 'a',
+          path: '../outside.md',
+          suggestedTitle: 'A',
+          labels: ['gold'],
+          reason: 'ok',
+        },
+      ],
+      warnings: [],
+    };
+
+    await writeFile(inputPath, 'source', 'utf8');
+    await writeFile(payloadPath, JSON.stringify(payload), 'utf8');
+
+    const expected = await loadFixture('preflight-allowlist-traversal.expected.txt');
+    const { code, output } = await runPreflight(payloadPath, []);
+    expect(code).toBe(1);
+    expect(output.trim()).toBe(expected);
   });
 });

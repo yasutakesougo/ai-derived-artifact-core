@@ -1,0 +1,2 @@
+Write preflight failed:
+[SUMMARY_MISMATCH] summary.approved=1 but rendered candidates=2

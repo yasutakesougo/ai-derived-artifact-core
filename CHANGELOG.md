@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.4.3 - NVIDIA NIM apply-approved preflight failure/output hardening (no-write)
+
+### Added
+
+- Hardened `review:apply-approved-preflight` output for deterministic reviews:
+  - structured failure codes in failure mode (`[SUMMARY_MISMATCH]`, `[WARNINGS_BLOCKED]`,
+    `[ALLOWLIST_*]`, `[LINEAGE_*]`)
+  - fixed stdout summary block in success mode for easier human checks
+  - fixture-based coverage for allowlist violations, lineage mismatches, warning blocks, and summary mismatch
+
+### Not Included
+
+- 実装は行わない（`--write` 未実装のまま）。
+- 実ファイル更新 / records 書き込みなし。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.4.2 - NVIDIA NIM apply-approved write preflight validation (no-write)
 
 ### Added

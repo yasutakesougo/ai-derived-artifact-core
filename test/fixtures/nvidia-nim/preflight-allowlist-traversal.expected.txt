@@ -1,0 +1,2 @@
+Write preflight failed:
+[ALLOWLIST_TRAVERSAL] item[0] path contains traversal: ../outside.md

@@ -545,12 +545,36 @@ Current preflight checks:
 - `summary.warnings === warnings.length`
 - warnings must be zero (pending warnings block preflight)
 - each item path resolves under allowlist roots
+- failure output is emitted with bracketed codes for deterministic inspection:
+  - `[SUMMARY_MISMATCH]`
+  - `[SUMMARY_WARNING_MISMATCH]`
+  - `[WARNINGS_BLOCKED]`
+  - `[ALLOWLIST_INVALID_PATH]`
+  - `[ALLOWLIST_TRAVERSAL]`
+  - `[ALLOWLIST_VIOLATION]`
+  - `[LINEAGE_INPUT_PATH_MISMATCH]`
+  - `[LINEAGE_INPUT_READ_FAIL]`
+  - `[LINEAGE_INPUT_HASH_MISMATCH]`
+  - `[LINEAGE_PLAN_HASH_MISMATCH]`
 - optional lineage checks:
   - planned input path equality (`--expected-input-path`)
   - input hash equality (`--expected-input-hash`)
   - full plan hash equality (`--expected-plan-hash`)
 
 Like previous stages, no real write occurs in this step.
+
+Example success output is now standardized as:
+
+```text
+Write preflight passed: apply-approved plan is write-ready.
+Summary:
+  inputPath: /path/to/input.json
+  approvedCandidates: 2
+  warnings: 0
+  summaryApproved: 2
+  summaryWarnings: 0
+  planHash: <sha256>
+```
 
 `--write` remains unsupported in this phase and is rejected.
 

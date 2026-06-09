@@ -44,13 +44,17 @@ function isUnderAllowedRoot(candidatePath, allowRoot) {
   return relativePath === '' || (!relativePath.startsWith(`..${sep}`) && relativePath !== '..' && !isAbsolute(relativePath));
 }
 
+function createFailure(code, message) {
+  return { code, message };
+}
+
 function validateResolvedPath(candidateRawPath, baseDir, allowlistedRoots, index) {
   if (!candidateRawPath) {
-    return `Item at index ${index} has empty path.`;
+    return createFailure('ALLOWLIST_INVALID_PATH', `item[${index}] path is empty`);
   }
 
   if (containsTraversalSegment(candidateRawPath)) {
-    return `Item ${index} path contains directory traversal segment: ${candidateRawPath}`;
+    return createFailure('ALLOWLIST_TRAVERSAL', `item[${index}] path contains traversal: ${candidateRawPath}`);
   }
 
   const resolvedPath = resolve(baseDir, candidateRawPath);
@@ -61,7 +65,7 @@ function validateResolvedPath(candidateRawPath, baseDir, allowlistedRoots, index
     }
   }
 
-  return `Item ${index} path ${candidateRawPath} is outside allowlist: ${allowlistedRoots.join(', ')}`;
+  return createFailure('ALLOWLIST_VIOLATION', `item[${index}] path="${candidateRawPath}" is outside allowlist roots`);
 }
 
 export function parseApplyApprovedPreflightArgs(args, cwd = process.cwd()) {
@@ -157,11 +161,14 @@ function computePlanHash(payload) {
 }
 
 async function validateLineage(payload, parsedArgs, inputPath) {
-  const errors = [];
+  const failures = [];
   if (parsedArgs.expectedPlanHash) {
     const actualPlanHash = computePlanHash(payload);
     if (actualPlanHash !== parsedArgs.expectedPlanHash) {
-      errors.push(`Plan checksum mismatch (expected ${parsedArgs.expectedPlanHash}, got ${actualPlanHash}).`);
+      failures.push(createFailure(
+        'LINEAGE_PLAN_HASH_MISMATCH',
+        `expected=${parsedArgs.expectedPlanHash}, actual=${actualPlanHash}`,
+      ));
     }
   }
 
@@ -169,7 +176,10 @@ async function validateLineage(payload, parsedArgs, inputPath) {
 
   if (parsedArgs.expectedInputPath) {
     if (resolve(dirname(inputPath), payload.inputPath) !== parsedArgs.expectedInputPath) {
-      errors.push(`Input path mismatch: expected ${parsedArgs.expectedInputPath}, actual ${resolve(dirname(inputPath), payload.inputPath)}.`);
+      failures.push(createFailure(
+        'LINEAGE_INPUT_PATH_MISMATCH',
+        `expected=${parsedArgs.expectedInputPath}, actual=${resolve(dirname(inputPath), payload.inputPath)}`,
+      ));
     }
   }
 
@@ -178,16 +188,19 @@ async function validateLineage(payload, parsedArgs, inputPath) {
     try {
       actualInputHash = await hashFile(effectiveInputPath);
     } catch (error) {
-      errors.push(`Input hash check failed: cannot read input path ${effectiveInputPath}.`);
-      return errors;
+      failures.push(createFailure('LINEAGE_INPUT_READ_FAIL', `cannot read input path ${effectiveInputPath}`));
+      return failures;
     }
 
     if (parsedArgs.expectedInputHash && actualInputHash !== parsedArgs.expectedInputHash) {
-      errors.push(`Input checksum mismatch (expected ${parsedArgs.expectedInputHash}, got ${actualInputHash}).`);
+      failures.push(createFailure(
+        'LINEAGE_INPUT_HASH_MISMATCH',
+        `expected=${parsedArgs.expectedInputHash}, actual=${actualInputHash}`,
+      ));
     }
   }
 
-  return errors;
+  return failures;
 }
 
 async function main() {
@@ -208,19 +221,28 @@ async function main() {
     process.exit(1);
   }
 
-  const errors = [];
+  const failures = [];
   const allowlistedRoots = deriveAllowlistRoots(parsedArgs.inputPath, parsedArgs.allowlist);
 
   if (payload.summary.approved !== payload.items.length) {
-    errors.push(`Summary mismatch: summary.approved=${payload.summary.approved} but rendered candidates=${payload.items.length}.`);
+    failures.push(createFailure(
+      'SUMMARY_MISMATCH',
+      `summary.approved=${payload.summary.approved} but rendered candidates=${payload.items.length}`,
+    ));
   }
 
   if (payload.summary.warnings !== payload.warnings.length) {
-    errors.push(`Summary warning mismatch: summary.warnings=${payload.summary.warnings}, actual warnings=${payload.warnings.length}.`);
+    failures.push(createFailure(
+      'SUMMARY_WARNING_MISMATCH',
+      `summary.warnings=${payload.summary.warnings} but rendered warnings=${payload.warnings.length}`,
+    ));
   }
 
   if (payload.warnings.length > 0) {
-    errors.push(`Preflight blocked because warning count is ${payload.warnings.length}.`);
+    failures.push(createFailure(
+      'WARNINGS_BLOCKED',
+      `warnings=${payload.warnings.length} must be 0 before preflight write-gate passes`,
+    ));
   }
 
   for (let index = 0; index < payload.items.length; index += 1) {
@@ -232,26 +254,29 @@ async function main() {
       index,
     );
     if (error) {
-      errors.push(error);
+      failures.push(error);
     }
   }
 
-  errors.push(...(await validateLineage(payload, parsedArgs, parsedArgs.inputPath)));
+  failures.push(...(await validateLineage(payload, parsedArgs, parsedArgs.inputPath)));
 
-  if (errors.length > 0) {
+  if (failures.length > 0) {
     console.error('Write preflight failed:');
-    for (const issue of errors) {
-      console.error(`- ${issue}`);
+    for (const issue of failures) {
+      console.error(`[${issue.code}] ${issue.message}`);
     }
     process.exit(1);
   }
 
   const planHash = computePlanHash(payload);
-  console.log('Write preflight passed: apply-approved plan is write-ready candidate.');
-  console.log(`Input path: ${payload.inputPath}`);
-  console.log(`Approved candidates: ${payload.items.length}`);
-  console.log(`Warnings: ${payload.warnings.length}`);
-  console.log(`Plan checksum: ${planHash}`);
+  console.log('Write preflight passed: apply-approved plan is write-ready.');
+  console.log('Summary:');
+  console.log(`  inputPath: ${payload.inputPath}`);
+  console.log(`  approvedCandidates: ${payload.items.length}`);
+  console.log(`  warnings: ${payload.warnings.length}`);
+  console.log(`  summaryApproved: ${payload.summary.approved}`);
+  console.log(`  summaryWarnings: ${payload.summary.warnings}`);
+  console.log(`  planHash: ${planHash}`);
 }
 
 if (fileURLToPath(import.meta.url) === process.argv[1]) {

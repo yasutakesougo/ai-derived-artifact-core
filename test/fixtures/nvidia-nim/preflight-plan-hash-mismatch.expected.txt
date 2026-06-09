@@ -1,0 +1,2 @@
+Write preflight failed:
+[LINEAGE_PLAN_HASH_MISMATCH] expected=000000, actual={PLAN_HASH}
