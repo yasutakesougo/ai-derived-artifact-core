@@ -613,6 +613,39 @@ write-path implementation.
   - failures are non-partial: either all items are applied or none are applied (all-or-nothing for this stage).
   - on any failure, no source note is modified and no records are written.
 
+### Apply Approved Write Path Allowlist (v0.4.1 design hardening)
+
+For a future `--write` implementation, candidate paths must be checked against
+an allowlist before any side effect:
+
+- Allowed roots are configured explicitly and must be validated at startup.
+- Resolved candidate path must be inside one allowed root.
+- Paths containing traversal segments (`..`) are rejected.
+- Symlinked paths are rejected when they resolve outside allowed roots.
+- Absolute paths are rejected unless they are already inside an allowed root.
+
+The check must run before any attempt to read/write anything.
+
+### Apply Approved Lineage / Checksum Contract (v0.4.1 design hardening)
+
+Write-gated execution must verify lineage between preview and write:
+
+- The exact file path and normalized content hash of the input plan used at preview
+  time are persisted for comparison.
+- Hash inputs include:
+  - canonicalized JSON body of the preview plan
+  - target `artifactId` and `path` pairs in their rendered order
+- `summary` and `warnings` must be regenerated from the canonicalized input and
+  re-compared before write.
+- Any difference in plan hash/lineage causes immediate abort with no side effects.
+
+### Write Guard Rules (v0.4.1 docs-only)
+
+- `--write` remains unsupported until a dedicated change set enables it.
+- Every apply-approved command (`validate` / `preview` / `approved-dry-run`) must
+  return `Unknown option: --write` when passed `--write`.
+- These rejections are now test-fixed and part of the acceptance gate.
+
 ### Apply Approved Plan Validation
 
 Validate a schema-stabilized apply-approved plan JSON before passing to an

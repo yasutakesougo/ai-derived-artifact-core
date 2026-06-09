@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.4.1 - NVIDIA NIM apply-approved write guard hardening (docs + tests, no-write)
+
+### Added
+
+- Added write-guard tests for apply-approved commands to keep `--write` rejected:
+  - `review:apply-approved-dry-run`
+  - `review:apply-approved-validate`
+  - `review:apply-approved-preview`
+- Added pre-write design hardening docs for:
+  - path allowlist contract
+  - lineage/checksum verification contract
+  - explicit write guard ruleset for future `--write`
+
+### Not Included
+
+- 実装は行わない（`--write` 未実装のまま）。
+- 実ファイル更新 / records 書き込みなし。
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.4.0 - NVIDIA NIM apply-approved write acceptance criteria (pre-write, docs-only)
 
 ### Added
