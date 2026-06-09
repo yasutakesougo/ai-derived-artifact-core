@@ -272,6 +272,22 @@ Output includes:
 
 No NVIDIA API calls are executed.
 
+### JSONL Report
+
+Generate a human-reviewable Markdown report from `reviews.jsonl`:
+
+```bash
+npm run review:report -- --out review-report.md reviews.jsonl
+```
+
+The generated report includes:
+
+- Summary: total / approve / needs_review / reject / failed
+- Failed rows with line numbers and parse errors
+- Needs Review and Reject candidate lists with artifactId/path/classification/reason
+
+No NVIDIA API calls are executed.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are

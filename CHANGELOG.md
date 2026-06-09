@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.3 - NVIDIA NIM Review Report (minimal)
+
+### Added
+
+- Added `review:report` CLI to generate Markdown reports from `reviews.jsonl`.
+- Added report output with summary counts, failed rows, and needs_review/reject
+  candidate tables.
+- Added report generation regression coverage (argument parsing and file output).
+
+### Not Included
+
+- `apply-approved-review.ts` integration.
+- JSONL filter CLI changes.
+- Records persistence integration.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.2 - NVIDIA NIM Review Aggregate (minimal)
 
 ### Added
