@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.3.5 - NVIDIA NIM apply-approved preview runbook
+
+### Added
+
+- Added a dedicated runbook for `review:apply-approved-preview` pre-apply checks:
+  - mandatory output verification points
+  - warning / summary-mismatch validation
+  - side-effect guard confirmation (`--write` rejected)
+  - safe capture guidance for audit/review handoff
+
+### Not Included
+
+- `--write` mode / real file updates.
+- `records` updates / source-note writes.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.3.4 - NVIDIA NIM apply-approved preview hardening
 
 ### Added

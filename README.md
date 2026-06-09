@@ -523,6 +523,56 @@ command.
 The command rejects write-oriented options (for example `--write`), so preview
 output is always side-effect free.
 
+### Apply Approved Preview Runbook (Pre-apply checks)
+
+Use this sequence before any `apply-approved-review` write integration work:
+
+1. Validate preview input:
+
+```bash
+npm run review:apply-approved-preview -- test/fixtures/nvidia-nim/reviews-apply-approved-plan.expected.json
+```
+
+2. Confirm human-readable preview shape:
+
+- Top summary lines are present (`Apply-approved preview`, `Total`, `Approved candidates`, `Warnings`)
+- Each candidate lists:
+  - `artifactId`
+  - `path`
+  - `suggestedTitle`
+  - `labels`
+  - `reason`
+- Warnings are visible even when no candidates exist.
+
+3. Confirm schema/metadata consistency:
+
+- If printed, `summary.approved` and rendered candidate count match.
+- If not matching, warning is shown and must be resolved before moving forward.
+- If present, `summary.warnings` and warning count line up.
+
+4. Confirm no write path is available:
+
+```bash
+npm run review:apply-approved-preview -- --write test/fixtures/nvidia-nim/reviews-apply-approved-plan.expected.json
+```
+
+Expected:
+
+`Unknown option: --write` and usage output.
+
+5. Confirm side effects:
+
+- No changes to source notes or `records` should occur in preview mode.
+- `--write` is intentionally unsupported in this stage.
+
+6. Capture output snapshot for manual review in release notes or ticket:
+
+```bash
+npm run review:apply-approved-preview -- test/fixtures/nvidia-nim/reviews-apply-approved-plan.expected.json > preview.log
+```
+
+Record any warning count mismatches and warning item messages in review handoff.
+
 ### Apply Approved Plan Validation
 
 Validate a schema-stabilized apply-approved plan JSON before passing to an
