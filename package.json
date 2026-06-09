@@ -10,7 +10,8 @@
     "check:safety": "node scripts/check-public-safety.mjs",
     "probe:nvidia": "node scripts/ai/nvidia-nim-probe.mjs",
     "review:nvidia": "node scripts/ai/nvidia-nim-review-file.mjs",
-    "review:nvidia:batch": "node scripts/ai/nvidia-nim-review-batch.mjs"
+    "review:nvidia:batch": "node scripts/ai/nvidia-nim-review-batch.mjs",
+    "review:import": "node scripts/ai/nvidia-nim-review-import.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

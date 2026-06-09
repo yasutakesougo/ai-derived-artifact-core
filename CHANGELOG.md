@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.1 - NVIDIA NIM Review Import (JSONL)
+
+### Added
+
+- Added `review:import` CLI to read NVIDIA NIM `reviews.jsonl`.
+- Added 1-line JSON parser with failure handling for invalid JSON rows.
+- Added decision aggregation output (`approve`, `needs_review`, `reject`, `failed`).
+- Added `--only` filter for `needs_review` and `reject` (and `approve`) extraction.
+- Added regression coverage for parse/aggregate and filtered CLI output.
+
+### Not Included
+
+- Production `records/` integration.
+- Automatic review apply flow.
+- Human review UI or LLM re-scoring.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.2.0 - NVIDIA NIM Batch Review JSONL Export
 
 ### Added

@@ -238,6 +238,24 @@ Output includes:
 - Detailed JSON results for downstream processing
 - Optional JSONL export via `--out`
 
+### JSONL Import
+
+Read `reviews.jsonl` and aggregate decisions for downstream tooling:
+
+```bash
+npm run review:import -- reviews.jsonl
+```
+
+Filter by decision for minimal follow-up processing:
+
+```bash
+npm run review:import -- --only needs_review reviews.jsonl
+npm run review:import -- --only reject reviews.jsonl
+```
+
+Output includes summary counts and failure handling. Broken JSON lines are
+treated as failed review records so they are visible during import.
+
 ### Validation
 
 The validator (`src/nvidia-nim-validator.ts`) ensures NVIDIA NIM responses are
