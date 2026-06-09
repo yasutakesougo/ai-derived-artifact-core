@@ -445,6 +445,43 @@ this command.
 
 ### Apply Approved (Dry Run)
 
+```bash
+npm run review:apply-approved-dry-run -- --json --out apply-approved-plan.json test/fixtures/nvidia-nim/reviews-apply-dry-run.expected.json
+```
+
+Plan output (JSON) is schema-stabilized for downstream `apply-approved-review`
+receivers:
+
+```json
+{
+  "schemaVersion": "nvidia-nim-apply-approved-dry-run/1.0",
+  "generatedAt": "2026-06-09T00:00:00.000Z",
+  "inputPath": "/path/to/input.json",
+  "summary": {
+    "total": 8,
+    "approved": 4,
+    "warnings": 2
+  },
+  "items": [
+    {
+      "artifactId": "artifact-a",
+      "path": "fixture-a.md",
+      "suggestedTitle": "Artifact Alpha",
+      "labels": ["gold", "high-confidence"],
+      "reason": "Looks consistent with policy"
+    }
+  ],
+  "warnings": [
+    {
+      "type": "failed-row",
+      "line": 7,
+      "message": "Unterminated string in JSON at position 15",
+      "raw": "{\"bad-json-line"
+    }
+  ]
+}
+```
+
 Connect a validated dry-run payload to the `apply-approved-review` plan phase
 without applying any files:
 

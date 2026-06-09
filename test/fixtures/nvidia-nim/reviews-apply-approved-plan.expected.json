@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "nvidia-nim-apply-approved-dry-run/1.0",
+  "generatedAt": "GENERATED_AT_PLACEHOLDER",
+  "inputPath": "INPUT_PATH_PLACEHOLDER",
+  "summary": {
+    "total": 8,
+    "approved": 4,
+    "warnings": 2
+  },
+  "items": [
+    {
+      "artifactId": "artifact-a",
+      "path": "fixture-a.md",
+      "suggestedTitle": "Artifact Alpha",
+      "labels": [
+        "gold",
+        "high-confidence"
+      ],
+      "reason": "Looks consistent with policy"
+    },
+    {
+      "artifactId": "artifact-c",
+      "path": "fixture-c.md",
+      "suggestedTitle": "",
+      "labels": [
+        "safe"
+      ],
+      "reason": "Auto-approved by model"
+    },
+    {
+      "artifactId": "artifact-d",
+      "path": "fixture-d.md",
+      "suggestedTitle": "",
+      "labels": [],
+      "reason": "No title suggestion"
+    },
+    {
+      "artifactId": "artifact-g",
+      "path": "fixture-g.md",
+      "suggestedTitle": "",
+      "labels": [],
+      "reason": ""
+    }
+  ],
+  "warnings": [
+    {
+      "type": "failed-row",
+      "line": 5,
+      "message": "Unknown parse failure"
+    },
+    {
+      "type": "failed-row",
+      "line": 7,
+      "message": "Unterminated string in JSON at position 15",
+      "raw": "{\"bad-json-line"
+    }
+  ]
+}

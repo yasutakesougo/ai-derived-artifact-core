@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -36,6 +36,24 @@ describe("NVIDIA NIM review apply approved dry-run", () => {
 
     expect(parsed).toEqual({
       inputPath: resolve(root, "apply-dry-run.json"),
+      outputPath: null,
+      outputJson: false,
+    });
+  });
+
+  it("parses --json and --out", async () => {
+    const parsed = JSON.parse(
+      await runNodeModule(`
+        import { parseApplyApprovedDryRunArgs } from './scripts/ai/nvidia-nim-apply-approved-dry-run.mjs';
+        const parsed = parseApplyApprovedDryRunArgs(['--json', '--out', 'apply-approved-plan.json', 'apply-dry-run.json'], ${JSON.stringify(root)});
+        process.stdout.write(JSON.stringify(parsed));
+      `),
+    );
+
+    expect(parsed).toEqual({
+      inputPath: resolve(root, "apply-dry-run.json"),
+      outputPath: resolve(root, "apply-approved-plan.json"),
+      outputJson: true,
     });
   });
 
@@ -59,6 +77,38 @@ describe("NVIDIA NIM review apply approved dry-run", () => {
     expect(output).toContain("reason: Looks consistent with policy");
     expect(output).toContain("- artifact-g");
     expect(output).toContain("reason: (none)");
+  });
+
+  it("writes approved plan JSON matching fixture", async () => {
+    const inputPath = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-dry-run.expected.json");
+    const expectedPath = resolve(import.meta.dirname, "fixtures", "nvidia-nim", "reviews-apply-approved-plan.expected.json");
+    const outputPath = join(root, "apply-approved-plan.json");
+
+    let exitCode = 0;
+    let execResult;
+    try {
+      execResult = await execFileAsync(
+        "node",
+        ["scripts/ai/nvidia-nim-apply-approved-dry-run.mjs", "--json", "--out", outputPath, inputPath],
+        { cwd: process.cwd() },
+      );
+    } catch (error) {
+      exitCode = (error as { code?: number }).code ?? 1;
+    }
+
+    const actual = JSON.parse(await readFile(outputPath, "utf8"));
+    const expected = JSON.parse(await readFile(expectedPath, "utf8"));
+    const normalized = {
+      ...actual,
+      generatedAt: "GENERATED_AT_PLACEHOLDER",
+      inputPath: "INPUT_PATH_PLACEHOLDER",
+    };
+
+    expect(exitCode).toBe(0);
+    if (execResult) {
+      expect(execResult.stdout).toContain(`Approved dry-run plan written: ${outputPath}`);
+    }
+    expect(normalized).toEqual(expected);
   });
 
   it("warns when failed rows exist and exits non-fail", async () => {

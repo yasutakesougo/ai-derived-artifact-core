@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.3.1 - NVIDIA NIM apply-approved-dry-run plan schema
+
+### Added
+
+- Added `--json` / `--out` support to `review:apply-approved-dry-run`.
+- Fixed output schema for downstream plan handoff:
+  - `schemaVersion`
+  - `generatedAt`
+  - `inputPath`
+  - `summary`
+  - `items[]`
+  - `warnings[]`
+- Added fixture-based JSON snapshot assertion for plan file output.
+- Kept no `--write` mode; output remains preview only.
+
+### Not Included
+
+- records / real source-note updates.
+- `apply-approved-review` write mode.
+
+### Verification
+
+- `npm run check:safety`
+- `npm run typecheck`
+- `npm test`
+
 ## v0.3.0 - NVIDIA NIM Review Apply Approved Dry-Run Bridge
 
 ### Added

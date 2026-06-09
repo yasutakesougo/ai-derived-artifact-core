@@ -1,16 +1,45 @@
+import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolveCliPath } from './nvidia-nim-paths.mjs';
 import { loadApplyValidateInput } from './nvidia-nim-apply-validate.mjs';
 
+export const APPLY_APPROVED_DRY_RUN_SCHEMA_VERSION = 'nvidia-nim-apply-approved-dry-run/1.0';
+
 function usage() {
-  return 'Usage: npm run review:apply-approved-dry-run -- apply-dry-run.json';
+  return 'Usage: npm run review:apply-approved-dry-run -- [--json] [--out apply-approved-plan.json] apply-dry-run.json';
 }
 
 export function parseApplyApprovedDryRunArgs(args, cwd = process.cwd()) {
   let inputPath = null;
+  let outputPath = null;
+  let outputJson = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
+
+    if (arg === '--json') {
+      outputJson = true;
+      continue;
+    }
+
+    if (arg === '--out') {
+      const value = args[index + 1];
+      if (!value || value.startsWith('--')) {
+        throw new Error('Missing value for --out');
+      }
+      outputPath = resolveCliPath(value, cwd, '--out path');
+      index += 1;
+      continue;
+    }
+
+    if (arg?.startsWith('--out=')) {
+      const value = arg.slice('--out='.length);
+      if (!value) {
+        throw new Error('Missing value for --out');
+      }
+      outputPath = resolveCliPath(value, cwd, '--out path');
+      continue;
+    }
 
     if (arg?.startsWith('--')) {
       throw new Error(`Unknown option: ${arg}`);
@@ -28,7 +57,7 @@ export function parseApplyApprovedDryRunArgs(args, cwd = process.cwd()) {
     throw new Error(usage());
   }
 
-  return { inputPath };
+  return { inputPath, outputPath, outputJson };
 }
 
 function selectApprovedItems(items) {
@@ -42,6 +71,52 @@ function selectApprovedItems(items) {
   }
 
   return approvedItems;
+}
+
+function buildWarnings(payload, approvedItems) {
+  const warnings = [];
+
+  for (const failure of payload.failed) {
+    warnings.push({
+      type: 'failed-row',
+      line: failure.line,
+      message: failure.error,
+      ...(failure.raw === null ? {} : { raw: failure.raw }),
+    });
+  }
+
+  if (payload.summary.approved !== approvedItems.length) {
+    warnings.push({
+      type: 'summary-mismatch',
+      message: `summary.approved=${payload.summary.approved} but planned approved items=${approvedItems.length}`,
+    });
+  }
+
+  return warnings;
+}
+
+function buildApprovedPlanPayload(payload) {
+  const approvedItems = selectApprovedItems(payload.items);
+  const warnings = buildWarnings(payload, approvedItems);
+
+  return {
+    schemaVersion: APPLY_APPROVED_DRY_RUN_SCHEMA_VERSION,
+    generatedAt: new Date().toISOString(),
+    inputPath: payload.inputPath,
+    summary: {
+      total: payload.summary.total,
+      approved: approvedItems.length,
+      warnings: warnings.length,
+    },
+    items: approvedItems.map((item) => ({
+      artifactId: item.artifactId,
+      path: item.path,
+      suggestedTitle: item.suggestedTitle,
+      labels: item.labels,
+      reason: item.reason,
+    })),
+    warnings,
+  };
 }
 
 function printApprovedPlan(payload) {
@@ -91,6 +166,28 @@ async function main() {
   } catch (error) {
     console.error(error.message);
     process.exit(1);
+  }
+
+  const planPayload = buildApprovedPlanPayload(payload);
+
+  if (parsedArgs.outputPath) {
+    if (parsedArgs.outputJson) {
+      await fs.writeFile(
+        parsedArgs.outputPath,
+        `${JSON.stringify(planPayload, null, 2)}\n`,
+        'utf8',
+      );
+      console.log(`Approved dry-run plan written: ${parsedArgs.outputPath}`);
+      return;
+    }
+
+    console.warn('Only --json output is supported for --out. Use --json --out.');
+    process.exit(1);
+  }
+
+  if (parsedArgs.outputJson) {
+    process.stdout.write(`${JSON.stringify(planPayload, null, 2)}\n`);
+    return;
   }
 
   printApprovedPlan(payload);
